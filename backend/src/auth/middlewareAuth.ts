@@ -134,7 +134,7 @@ export function requireOwnership(userIdParam: string = 'id') {
 
     const resourceUserId = parseInt(req.params[userIdParam]);
     const currentUserId = req.user.userId;
-    const isAdmin = req.user.roles.includes('ADMIN');
+    const isAdmin = req.user.roles?.includes('ADMIN') || false;
 
     if (currentUserId === resourceUserId || isAdmin) {
       next();

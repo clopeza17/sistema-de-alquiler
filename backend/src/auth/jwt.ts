@@ -7,8 +7,9 @@ import { UnauthorizedError } from '../common/errors.js';
  */
 export interface JwtPayload {
   userId: number;
-  email: string;
-  roles: string[];
+  email?: string;
+  roles?: string[];
+  type?: 'access' | 'refresh';
   iat?: number;
   exp?: number;
 }
@@ -31,9 +32,14 @@ export interface AuthResponse {
 /**
  * Generar token JWT
  */
-export function generateToken(payload: Omit<JwtPayload, 'iat' | 'exp'>): string {
+export function generateToken(
+  payload: Omit<JwtPayload, 'iat' | 'exp'>, 
+  expiresIn?: string
+): string {
   try {
-    const options: any = { expiresIn: env.JWT_EXPIRES_IN };
+    const options: any = { 
+      expiresIn: expiresIn || env.JWT_EXPIRES_IN 
+    };
     return jwt.sign(payload, env.JWT_SECRET, options);
   } catch (error) {
     throw new Error('Error al generar token JWT');

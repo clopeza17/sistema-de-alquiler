@@ -1,7 +1,8 @@
 export interface JwtPayload {
     userId: number;
-    email: string;
-    roles: string[];
+    email?: string;
+    roles?: string[];
+    type?: 'access' | 'refresh';
     iat?: number;
     exp?: number;
 }
@@ -16,7 +17,7 @@ export interface AuthResponse {
         roles: string[];
     };
 }
-export declare function generateToken(payload: Omit<JwtPayload, 'iat' | 'exp'>): string;
+export declare function generateToken(payload: Omit<JwtPayload, 'iat' | 'exp'>, expiresIn?: string): string;
 export declare function generateRefreshToken(userId: number): string;
 export declare function verifyToken(token: string): JwtPayload;
 export declare function verifyRefreshToken(token: string): {

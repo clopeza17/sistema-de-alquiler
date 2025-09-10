@@ -1,9 +1,11 @@
 import jwt from 'jsonwebtoken';
 import { env } from '../config/env.js';
 import { UnauthorizedError } from '../common/errors.js';
-export function generateToken(payload) {
+export function generateToken(payload, expiresIn) {
     try {
-        const options = { expiresIn: env.JWT_EXPIRES_IN };
+        const options = {
+            expiresIn: expiresIn || env.JWT_EXPIRES_IN
+        };
         return jwt.sign(payload, env.JWT_SECRET, options);
     }
     catch (error) {

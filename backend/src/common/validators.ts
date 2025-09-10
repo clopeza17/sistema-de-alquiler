@@ -118,6 +118,30 @@ export function validateFutureDate(date: string): boolean {
 }
 
 /**
+ * Schemas para autenticación
+ */
+
+// Login
+export const loginSchema = z.object({
+  email: emailSchema,
+  password: z.string().min(1, 'Contraseña requerida'),
+});
+
+// Registro
+export const registerSchema = z.object({
+  email: emailSchema,
+  password: passwordSchema,
+  nombres: nameSchema,
+  apellidos: nameSchema,
+  telefono: phoneSchema,
+});
+
+// Refresh token
+export const refreshTokenSchema = z.object({
+  refreshToken: z.string().min(1, 'Refresh token requerido'),
+});
+
+/**
  * Schemas para entidades específicas
  */
 
@@ -224,6 +248,11 @@ export default {
   contratoCreateSchema,
   pagoCreateSchema,
   aplicacionPagoSchema,
+  
+  // Schemas de autenticación
+  loginSchema,
+  registerSchema,
+  refreshTokenSchema,
   
   // Funciones de validación
   validateContractDates,

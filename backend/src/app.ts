@@ -19,6 +19,13 @@ import {
   requestLogger,
 } from './middlewares/errorHandler.js';
 
+// Importar middleware de auditoría
+import { auditMiddleware } from './middlewares/audit.js';
+
+// Importar rutas
+import authRoutes from './routes/authRoutes.js';
+import usersRoutes from './routes/usersRoutes.js';
+
 // Crear aplicación Express
 const app = express();
 
@@ -49,6 +56,9 @@ app.use(sanitizeInput);
 // 8. Logging de requests
 app.use(requestLogger);
 
+// 9. Auditoría de acciones
+app.use(auditMiddleware);
+
 // ========== RUTAS ==========
 
 // Health check endpoint
@@ -72,6 +82,10 @@ app.get('/', (_req, res) => {
     health: '/health',
   });
 });
+
+// API routes
+app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/usuarios', usersRoutes);
 
 // API routes prefix - TODO: agregar rutas de módulos
 app.use('/api/v1', (_req, res, _next) => {

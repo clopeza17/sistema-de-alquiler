@@ -4,7 +4,6 @@ import { RowDataPacket } from 'mysql2';
 import { generateToken, verifyToken } from '../auth/jwt.js';
 import { hashPassword, verifyPassword } from '../auth/password.js';
 import { 
-  BadRequestError, 
   UnauthorizedError, 
   NotFoundError, 
   ConflictError 
@@ -25,21 +24,20 @@ const logger = createAuthLogger();
  */
 interface UserRow extends RowDataPacket {
   id: number;
-  email: string;
-  password: string;
-  nombres: string;
-  apellidos: string;
-  telefono?: string;
-  estado: 'ACTIVO' | 'INACTIVO' | 'BLOQUEADO';
-  created_at: Date;
-  updated_at: Date;
+  correo: string;
+  contrasena_hash: string;
+  nombre_completo: string;
+  activo: boolean;
+  ultimo_acceso_el: Date;
+  creado_el: Date;
+  actualizado_el: Date;
 }
 
 /**
  * Interfaz para roles de usuario
  */
 interface UserRoleRow extends RowDataPacket {
-  role_name: string;
+  nombre: string;
 }
 
 /**
@@ -54,8 +52,8 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
 
   // Buscar usuario por email
   const [userRows] = await pool.execute<UserRow[]>(
-    'SELECT * FROM usuarios WHERE email = ? AND estado != ?',
-    [email, 'INACTIVO']
+    'SELECT * FROM usuarios WHERE correo = ? AND activo = 1',
+    [email]
   );
 
   if (userRows.length === 0) {
@@ -65,14 +63,8 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
 
   const user = userRows[0];
 
-  // Verificar estado del usuario
-  if (user.estado === 'BLOQUEADO') {
-    await auditAction(req, 'LOGIN', 'SESSION', user.id, { email }, false, 'Usuario bloqueado');
-    throw new UnauthorizedError('Usuario bloqueado. Contacte al administrador');
-  }
-
   // Verificar contraseña
-  const isPasswordValid = await verifyPassword(password, user.password);
+  const isPasswordValid = await verifyPassword(password, user.contrasena_hash);
   if (!isPasswordValid) {
     await auditAction(req, 'LOGIN', 'SESSION', user.id, { email }, false, 'Contraseña incorrecta');
     throw new UnauthorizedError('Credenciales inválidas');
@@ -80,19 +72,19 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
 
   // Obtener roles del usuario
   const [roleRows] = await pool.execute<UserRoleRow[]>(
-    `SELECT r.nombre as role_name 
-     FROM user_roles ur 
-     JOIN roles r ON ur.role_id = r.id 
-     WHERE ur.user_id = ?`,
+    `SELECT r.nombre 
+     FROM usuarios_roles ur 
+     JOIN roles r ON ur.rol_id = r.id 
+     WHERE ur.usuario_id = ?`,
     [user.id]
   );
 
-  const roles = roleRows.map(row => row.role_name);
+  const roles = roleRows.map(row => row.nombre);
 
   // Generar tokens
   const accessToken = generateToken({
     userId: user.id,
-    email: user.email,
+    email: user.correo,
     roles,
   });
 
@@ -103,7 +95,7 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
 
   // Actualizar último login
   await pool.execute(
-    'UPDATE usuarios SET ultimo_login = NOW() WHERE id = ?',
+    'UPDATE usuarios SET ultimo_acceso_el = NOW() WHERE id = ?',
     [user.id]
   );
 
@@ -112,7 +104,7 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
 
   logger.info({ 
     userId: user.id, 
-    email: user.email, 
+    email: user.correo, 
     roles 
   }, 'Login exitoso');
 
@@ -121,10 +113,8 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
     data: {
       user: {
         id: user.id,
-        email: user.email,
-        nombres: user.nombres,
-        apellidos: user.apellidos,
-        telefono: user.telefono,
+        email: user.correo,
+        nombre: user.nombre_completo,
         roles,
         ultimoLogin: new Date(),
       },
@@ -154,8 +144,8 @@ export const refresh = asyncHandler(async (req: Request, res: Response) => {
 
     // Verificar que el usuario sigue existiendo y activo
     const [userRows] = await pool.execute<UserRow[]>(
-      'SELECT * FROM usuarios WHERE id = ? AND estado = ?',
-      [payload.userId, 'ACTIVO']
+      'SELECT * FROM usuarios WHERE id = ? AND activo = 1',
+      [payload.userId]
     );
 
     if (userRows.length === 0) {
@@ -166,19 +156,19 @@ export const refresh = asyncHandler(async (req: Request, res: Response) => {
 
     // Obtener roles actualizados
     const [roleRows] = await pool.execute<UserRoleRow[]>(
-      `SELECT r.nombre as role_name 
-       FROM user_roles ur 
-       JOIN roles r ON ur.role_id = r.id 
-       WHERE ur.user_id = ?`,
+      `SELECT r.nombre 
+       FROM usuarios_roles ur 
+       JOIN roles r ON ur.rol_id = r.id 
+       WHERE ur.usuario_id = ?`,
       [user.id]
     );
 
-    const roles = roleRows.map(row => row.role_name);
+    const roles = roleRows.map(row => row.nombre);
 
     // Generar nuevo access token
     const newAccessToken = generateToken({
       userId: user.id,
-      email: user.email,
+      email: user.correo,
       roles,
     });
 
@@ -229,7 +219,7 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
 
   // Verificar si el email ya existe
   const [existingUsers] = await pool.execute<UserRow[]>(
-    'SELECT id FROM usuarios WHERE email = ?',
+    'SELECT id FROM usuarios WHERE correo = ?',
     [userData.email]
   );
 
@@ -242,14 +232,12 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
 
   // Crear usuario
   const [result] = await pool.execute(
-    `INSERT INTO usuarios (email, password, nombres, apellidos, telefono, estado, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, 'ACTIVO', NOW(), NOW())`,
+    `INSERT INTO usuarios (correo, contrasena_hash, nombre_completo, activo, created_at, updated_at)
+     VALUES (?, ?, ?, 1, NOW(), NOW())`,
     [
       userData.email,
       hashedPassword,
-      userData.nombres,
-      userData.apellidos,
-      userData.telefono || null,
+      `${userData.nombres} ${userData.apellidos}`,
     ]
   );
 
@@ -257,13 +245,13 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
 
   // Asignar rol por defecto (INQUILINO)
   const [roleRows] = await pool.execute<RowDataPacket[]>(
-    'SELECT id FROM roles WHERE nombre = ?',
+    'SELECT id FROM roles WHERE codigo = ?',
     ['INQUILINO']
   );
 
   if (roleRows.length > 0) {
     await pool.execute(
-      'INSERT INTO user_roles (user_id, role_id, created_at) VALUES (?, ?, NOW())',
+      'INSERT INTO usuarios_roles (usuario_id, rol_id, created_at) VALUES (?, ?, NOW())',
       [userId, roleRows[0].id]
     );
   }
@@ -285,9 +273,7 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
       user: {
         id: userId,
         email: userData.email,
-        nombres: userData.nombres,
-        apellidos: userData.apellidos,
-        telefono: userData.telefono,
+        nombre: `${userData.nombres} ${userData.apellidos}`,
         roles: ['INQUILINO'],
       },
     },
@@ -303,7 +289,7 @@ export const getProfile = asyncHandler(async (req: Request, res: Response) => {
 
   // Obtener información del usuario
   const [userRows] = await pool.execute<UserRow[]>(
-    'SELECT id, email, nombres, apellidos, telefono, estado, ultimo_login FROM usuarios WHERE id = ?',
+    'SELECT id, correo, nombre_completo, activo, ultimo_acceso_el FROM usuarios WHERE id = ?',
     [userId]
   );
 
@@ -315,27 +301,25 @@ export const getProfile = asyncHandler(async (req: Request, res: Response) => {
 
   // Obtener roles
   const [roleRows] = await pool.execute<UserRoleRow[]>(
-    `SELECT r.nombre as role_name 
-     FROM user_roles ur 
-     JOIN roles r ON ur.role_id = r.id 
-     WHERE ur.user_id = ?`,
+    `SELECT r.nombre 
+     FROM usuarios_roles ur 
+     JOIN roles r ON ur.rol_id = r.id 
+     WHERE ur.usuario_id = ?`,
     [userId]
   );
 
-  const roles = roleRows.map(row => row.role_name);
+  const roles = roleRows.map(row => row.nombre);
 
   res.json({
     message: 'Perfil obtenido exitosamente',
     data: {
       user: {
         id: user.id,
-        email: user.email,
-        nombres: user.nombres,
-        apellidos: user.apellidos,
-        telefono: user.telefono,
-        estado: user.estado,
+        email: user.correo,
+        nombre: user.nombre_completo,
+        activo: user.activo,
         roles,
-        ultimoLogin: user.ultimo_login,
+        ultimoLogin: user.ultimo_acceso_el,
       },
     },
   });

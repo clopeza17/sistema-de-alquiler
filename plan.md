@@ -15,63 +15,55 @@
 - [ ] 📋 Documentar instalación y despliegue local
 
 ### 1.2 Estructura de Proyectos
-- [ ] 📋 Crear estructura del backend (`backend/`)
+- [x] ✅ Crear estructura del backend (`backend/`)
 - [ ] 📋 Crear estructura del frontend (`frontend/`)
-- [ ] 📋 Configurar TypeScript (opcional pero recomendado)
+- [x] ✅ Configurar TypeScript (opcional pero recomendado)
 - [ ] 📋 Configurar ESLint + Prettier
-- [ ] 📋 Configurar scripts NPM (`dev`, `build`, `test`, `start`)
+- [x] ✅ Configurar scripts NPM (`dev`, `build`, `test`, `start`)
 
 ---
 
 ## 🔧 **FASE 2: BACKEND (Node.js + Express)**
 
 ### 2.1 Configuración Inicial del Backend
-- [x] 📋 Inicializar proyecto Node.js (`npm init`)
-- [x] 📋 Instalar dependencias principales:
-  - [x] Express, mysql2, jsonwebtoken, bcrypt
-  - [x] helmet, cors, express-rate-limit
-  - [x] dotenv, zod, pino, dayjs
-  - [x] multer, swagger-ui-express
-- [x] 📋 Configurar estructura de carpetas (`src/`, `config/`, `auth/`, etc.)
-- [x] 📋 Configurar TypeScript (tsconfig.json)
+- [x] ✅ Inicializar proyecto Node.js (`npm init`)
+- [x] ✅ Instalar dependencias principales:
+  - [x] ✅ Express, mysql2, jsonwebtoken, bcrypt
+  - [x] ✅ helmet, cors, express-rate-limit
+  - [x] ✅ dotenv, zod, pino, dayjs
+  - [x] ✅ multer, swagger-ui-express
+- [x] ✅ Configurar estructura de carpetas (`src/`, `config/`, `auth/`, etc.)
+- [x] ✅ Configurar TypeScript (tsconfig.json)
 
-### 2.2 Configuración de Base
-- [x] 📋 Configurar conexión MySQL (`config/db.ts`)
-- [x] 📋 Configurar variables de entorno (`config/env.ts`)
-- [x] 📋 Configurar logger (`config/logger.ts`)
-- [x] 📋 Configurar manejo de fechas zona GT (`common/dates.ts`)
+### 2.2 Base de Datos
+- [x] ✅ Configurar conexión MySQL
+- [x] ✅ Script de inicialización (tablas principales)
+- [x] ✅ Configurar pool de conexiones
 
-### 2.3 Autenticación y Seguridad
-- [x] 📋 Implementar JWT (`auth/jwt.ts`)
-- [x] 📋 Implementar hash de contraseñas (`auth/password.ts`)
-- [x] 📋 Middleware de autenticación (`auth/middlewareAuth.ts`)
-- [x] 📋 Middleware RBAC (`auth/middlewareRBAC.ts`)
-- [x] 📋 Configurar CORS, Helmet, Rate Limiting
-- [ ] 📋 Middleware de auditoría (`middlewares/audit.ts`)
-- [x] 📋 Manejo centralizado de errores (`middlewares/errorHandler.ts`)
+### 2.3 Sistema de Autenticación y Autorización
+- [x] ✅ Configurar JWT (jsonwebtoken)
+- [x] ✅ Middleware de autenticación
+- [x] ✅ Middleware RBAC (roles)
+- [x] ✅ Hash de contraseñas (bcrypt)
+- [x] ✅ Rutas de auth (login, logout)
+- [x] ✅ Gestión de roles y permisos
 
-### 2.4 Módulos Core - Usuarios y Roles
-- [ ] 📋 **Auth Controller**:
-  - [ ] `POST /auth/login` - Login con JWT
-  - [ ] `POST /auth/refresh` - Renovar token
-  - [ ] `POST /auth/logout` - Cerrar sesión
-- [ ] 📋 **Usuarios Controller** (ADMIN):
-  - [ ] `GET /usuarios` - Listar con paginación/filtros
-  - [ ] `POST /usuarios` - Crear usuario + roles
-  - [ ] `PUT /usuarios/:id` - Actualizar usuario
-  - [ ] `PATCH /usuarios/:id/activar` - Activar/desactivar
-- [ ] 📋 **Roles Controller**:
-  - [ ] `GET /roles` - Catálogo de roles
+### 2.4 Controladores y Rutas Principales
+- [x] ✅ `usersController.ts` - Gestión completa de usuarios (CRUD)
+- [x] ✅ `rolesController.ts` - Catálogo de roles
+- [x] ✅ `usersRoutes.ts` - Rutas protegidas con RBAC
+- [ ] � `inquilinosController.ts` - CRUD inquilinos
+- [ ] 🚧 `propiedadesController.ts` - CRUD propiedades  
+- [ ] 🚧 `contratosController.ts` - CRUD contratos
+- [ ] � `pagosController.ts` - Gestión de pagos
+- [ ] � `reportesController.ts` - Reportes y analytics
 
-### 2.5 Módulos de Negocio - Inquilinos
-- [ ] 📋 **Inquilinos Controller**:
-  - [ ] `GET /inquilinos` - Listar con búsqueda y paginación
-  - [ ] `POST /inquilinos` - Crear inquilino
-  - [ ] `GET /inquilinos/:id` - Obtener inquilino específico
-  - [ ] `PUT /inquilinos/:id` - Actualizar inquilino
-  - [ ] `DELETE /inquilinos/:id` - Eliminar (validar sin contratos activos)
-- [ ] 📋 Validaciones de negocio (doc_identidad único, correo único)
-- [ ] 📋 Búsqueda por nombre/documento
+### 2.5 Middlewares y Seguridad
+- [x] ✅ Middleware de auditoría (audit.ts)
+- [x] ✅ Manejo de errores (errorHandler.ts)
+- [x] ✅ Seguridad (helmet, cors, rate limiting)
+- [x] ✅ Validación de datos (Zod schemas)
+- [x] ✅ Logging (pino)
 
 ### 2.6 Módulos de Negocio - Propiedades
 - [ ] 📋 **Propiedades Controller**:

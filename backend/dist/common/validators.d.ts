@@ -14,11 +14,11 @@ export declare const paginationSchema: z.ZodObject<{
     page: z.ZodDefault<z.ZodNumber>;
     limit: z.ZodDefault<z.ZodNumber>;
 }, "strip", z.ZodTypeAny, {
-    limit: number;
     page: number;
+    limit: number;
 }, {
-    limit?: number | undefined;
     page?: number | undefined;
+    limit?: number | undefined;
 }>;
 export declare const sortSchema: z.ZodOptional<z.ZodString>;
 export declare const dateRangeSchema: z.ZodEffects<z.ZodObject<{
@@ -39,6 +39,42 @@ export declare const dateRangeSchema: z.ZodEffects<z.ZodObject<{
 }>;
 export declare function validateContractDates(fechaInicio: string, fechaFin: string): boolean;
 export declare function validateFutureDate(date: string): boolean;
+export declare const loginSchema: z.ZodObject<{
+    email: z.ZodString;
+    password: z.ZodString;
+}, "strip", z.ZodTypeAny, {
+    email: string;
+    password: string;
+}, {
+    email: string;
+    password: string;
+}>;
+export declare const registerSchema: z.ZodObject<{
+    email: z.ZodString;
+    password: z.ZodString;
+    nombres: z.ZodString;
+    apellidos: z.ZodString;
+    telefono: z.ZodOptional<z.ZodString>;
+}, "strip", z.ZodTypeAny, {
+    email: string;
+    password: string;
+    nombres: string;
+    apellidos: string;
+    telefono?: string | undefined;
+}, {
+    email: string;
+    password: string;
+    nombres: string;
+    apellidos: string;
+    telefono?: string | undefined;
+}>;
+export declare const refreshTokenSchema: z.ZodObject<{
+    refreshToken: z.ZodString;
+}, "strip", z.ZodTypeAny, {
+    refreshToken: string;
+}, {
+    refreshToken: string;
+}>;
 export declare const userCreateSchema: z.ZodObject<{
     correo: z.ZodString;
     contrasena: z.ZodString;
@@ -77,15 +113,15 @@ export declare const inquilinoCreateSchema: z.ZodObject<{
     direccion: z.ZodOptional<z.ZodString>;
 }, "strip", z.ZodTypeAny, {
     nombre_completo: string;
+    telefono?: string | undefined;
     correo?: string | undefined;
     doc_identidad?: string | undefined;
-    telefono?: string | undefined;
     direccion?: string | undefined;
 }, {
     nombre_completo: string;
+    telefono?: string | undefined;
     correo?: string | undefined;
     doc_identidad?: string | undefined;
-    telefono?: string | undefined;
     direccion?: string | undefined;
 }>;
 export declare const inquilinoUpdateSchema: z.ZodObject<{
@@ -95,16 +131,16 @@ export declare const inquilinoUpdateSchema: z.ZodObject<{
     correo: z.ZodOptional<z.ZodOptional<z.ZodString>>;
     direccion: z.ZodOptional<z.ZodOptional<z.ZodString>>;
 }, "strip", z.ZodTypeAny, {
+    telefono?: string | undefined;
     correo?: string | undefined;
     nombre_completo?: string | undefined;
     doc_identidad?: string | undefined;
-    telefono?: string | undefined;
     direccion?: string | undefined;
 }, {
+    telefono?: string | undefined;
     correo?: string | undefined;
     nombre_completo?: string | undefined;
     doc_identidad?: string | undefined;
-    telefono?: string | undefined;
     direccion?: string | undefined;
 }>;
 export declare const propiedadCreateSchema: z.ZodObject<{
@@ -260,11 +296,11 @@ declare const _default: {
         page: z.ZodDefault<z.ZodNumber>;
         limit: z.ZodDefault<z.ZodNumber>;
     }, "strip", z.ZodTypeAny, {
-        limit: number;
         page: number;
+        limit: number;
     }, {
-        limit?: number | undefined;
         page?: number | undefined;
+        limit?: number | undefined;
     }>;
     sortSchema: z.ZodOptional<z.ZodString>;
     dateRangeSchema: z.ZodEffects<z.ZodObject<{
@@ -321,15 +357,15 @@ declare const _default: {
         direccion: z.ZodOptional<z.ZodString>;
     }, "strip", z.ZodTypeAny, {
         nombre_completo: string;
+        telefono?: string | undefined;
         correo?: string | undefined;
         doc_identidad?: string | undefined;
-        telefono?: string | undefined;
         direccion?: string | undefined;
     }, {
         nombre_completo: string;
+        telefono?: string | undefined;
         correo?: string | undefined;
         doc_identidad?: string | undefined;
-        telefono?: string | undefined;
         direccion?: string | undefined;
     }>;
     inquilinoUpdateSchema: z.ZodObject<{
@@ -339,16 +375,16 @@ declare const _default: {
         correo: z.ZodOptional<z.ZodOptional<z.ZodString>>;
         direccion: z.ZodOptional<z.ZodOptional<z.ZodString>>;
     }, "strip", z.ZodTypeAny, {
+        telefono?: string | undefined;
         correo?: string | undefined;
         nombre_completo?: string | undefined;
         doc_identidad?: string | undefined;
-        telefono?: string | undefined;
         direccion?: string | undefined;
     }, {
+        telefono?: string | undefined;
         correo?: string | undefined;
         nombre_completo?: string | undefined;
         doc_identidad?: string | undefined;
-        telefono?: string | undefined;
         direccion?: string | undefined;
     }>;
     propiedadCreateSchema: z.ZodObject<{
@@ -486,6 +522,42 @@ declare const _default: {
     }, {
         factura_id: number;
         monto_aplicado: number;
+    }>;
+    loginSchema: z.ZodObject<{
+        email: z.ZodString;
+        password: z.ZodString;
+    }, "strip", z.ZodTypeAny, {
+        email: string;
+        password: string;
+    }, {
+        email: string;
+        password: string;
+    }>;
+    registerSchema: z.ZodObject<{
+        email: z.ZodString;
+        password: z.ZodString;
+        nombres: z.ZodString;
+        apellidos: z.ZodString;
+        telefono: z.ZodOptional<z.ZodString>;
+    }, "strip", z.ZodTypeAny, {
+        email: string;
+        password: string;
+        nombres: string;
+        apellidos: string;
+        telefono?: string | undefined;
+    }, {
+        email: string;
+        password: string;
+        nombres: string;
+        apellidos: string;
+        telefono?: string | undefined;
+    }>;
+    refreshTokenSchema: z.ZodObject<{
+        refreshToken: z.ZodString;
+    }, "strip", z.ZodTypeAny, {
+        refreshToken: string;
+    }, {
+        refreshToken: string;
     }>;
     validateContractDates: typeof validateContractDates;
     validateFutureDate: typeof validateFutureDate;

@@ -71,6 +71,20 @@ export function validateFutureDate(date) {
         return false;
     }
 }
+export const loginSchema = z.object({
+    email: emailSchema,
+    password: z.string().min(1, 'Contraseña requerida'),
+});
+export const registerSchema = z.object({
+    email: emailSchema,
+    password: passwordSchema,
+    nombres: nameSchema,
+    apellidos: nameSchema,
+    telefono: phoneSchema,
+});
+export const refreshTokenSchema = z.object({
+    refreshToken: z.string().min(1, 'Refresh token requerido'),
+});
 export const userCreateSchema = z.object({
     correo: emailSchema,
     contrasena: passwordSchema,
@@ -149,6 +163,9 @@ export default {
     contratoCreateSchema,
     pagoCreateSchema,
     aplicacionPagoSchema,
+    loginSchema,
+    registerSchema,
+    refreshTokenSchema,
     validateContractDates,
     validateFutureDate,
     formatZodErrors,
