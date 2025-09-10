@@ -1,1 +1,21 @@
+# Archivos del sistema
 .DS_Store
+*.log
+
+# Variables de entorno
+.env
+
+# Datos de Docker
+mysql_data/
+
+# Node modules (si usas Node.js)
+node_modules/
+
+# Python (si usas Python)
+__pycache__/
+*.pyc
+venv/
+
+# IDE
+.vscode/
+.idea/
