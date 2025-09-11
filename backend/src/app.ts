@@ -25,6 +25,7 @@ import { auditMiddleware } from './middlewares/audit.js';
 // Importar rutas
 import authRoutes from './routes/authRoutes.js';
 import usersRoutes from './routes/usersRoutes.js';
+import inquilinosRoutes from './routes/inquilinosRoutes.js';
 
 // Crear aplicación Express
 const app = express();
@@ -86,6 +87,7 @@ app.get('/', (_req, res) => {
 // API routes
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/usuarios', usersRoutes);
+app.use('/api/v1/inquilinos', inquilinosRoutes);
 
 // API routes prefix - TODO: agregar rutas de módulos
 app.use('/api/v1', (_req, res, _next) => {

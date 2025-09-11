@@ -6,7 +6,7 @@ const logger = createAuthLogger();
 /**
  * Tipos de roles del sistema
  */
-export type SystemRole = 'ADMIN' | 'PROPIETARIO' | 'INQUILINO' | 'AGENTE';
+export type SystemRole = 'ADMIN' | 'PROPIETARIO' | 'INQUILINO' | 'AGENTE' | 'OPERADOR';
 
 /**
  * Permisos específicos del sistema
@@ -66,6 +66,15 @@ const ROLE_PERMISSIONS: Record<SystemRole, Permission[]> = {
     'contracts.read', 'contracts.create', 'contracts.update',
     'payments.read',
     'documents.read', 'documents.create'
+  ],
+
+  OPERADOR: [
+    // Personal operativo con amplios permisos para gestión diaria
+    'users.read', 'users.create', 'users.update',
+    'properties.read', 'properties.create', 'properties.update',
+    'contracts.read', 'contracts.create', 'contracts.update',
+    'payments.read', 'payments.create', 'payments.update',
+    'documents.read', 'documents.create', 'documents.update'
   ]
 };
 

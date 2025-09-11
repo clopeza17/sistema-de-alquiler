@@ -27,5 +27,8 @@ export const createDbLogger = () => {
 export const createAuthLogger = () => {
     return logger.child({ name: 'auth' });
 };
+export const createBusinessLogger = (module) => {
+    return logger.child({ name: `business-${module}` });
+};
 export default logger;
 //# sourceMappingURL=logger.js.map

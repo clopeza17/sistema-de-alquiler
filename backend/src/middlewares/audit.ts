@@ -18,7 +18,7 @@ export type AuditAction =
  */
 export type ResourceType = 
   | 'USER' | 'PROPERTY' | 'CONTRACT' | 'PAYMENT' 
-  | 'DOCUMENT' | 'ROLE' | 'SESSION';
+  | 'DOCUMENT' | 'ROLE' | 'SESSION' | 'INQUILINO';
 
 /**
  * Interfaz para el log de auditoría

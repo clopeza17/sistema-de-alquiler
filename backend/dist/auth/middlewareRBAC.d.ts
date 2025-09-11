@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-export type SystemRole = 'ADMIN' | 'PROPIETARIO' | 'INQUILINO' | 'AGENTE';
+export type SystemRole = 'ADMIN' | 'PROPIETARIO' | 'INQUILINO' | 'AGENTE' | 'OPERADOR';
 export type Permission = 'users.read' | 'users.create' | 'users.update' | 'users.delete' | 'properties.read' | 'properties.create' | 'properties.update' | 'properties.delete' | 'contracts.read' | 'contracts.create' | 'contracts.update' | 'contracts.delete' | 'payments.read' | 'payments.create' | 'payments.update' | 'payments.delete' | 'documents.read' | 'documents.create' | 'documents.update' | 'documents.delete' | 'audit.read' | 'system.admin';
 export declare function hasPermission(roles: SystemRole[], permission: Permission): boolean;
 export declare function requireRoles(...requiredRoles: SystemRole[]): (req: Request, res: Response, next: NextFunction) => void;

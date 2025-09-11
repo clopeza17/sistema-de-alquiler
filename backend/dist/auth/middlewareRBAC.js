@@ -29,6 +29,13 @@ const ROLE_PERMISSIONS = {
         'contracts.read', 'contracts.create', 'contracts.update',
         'payments.read',
         'documents.read', 'documents.create'
+    ],
+    OPERADOR: [
+        'users.read', 'users.create', 'users.update',
+        'properties.read', 'properties.create', 'properties.update',
+        'contracts.read', 'contracts.create', 'contracts.update',
+        'payments.read', 'payments.create', 'payments.update',
+        'documents.read', 'documents.create', 'documents.update'
     ]
 };
 export function hasPermission(roles, permission) {
