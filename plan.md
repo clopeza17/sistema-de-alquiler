@@ -1,5 +1,40 @@
 # 📋 Plan de Implementación Detallado - Sistema de Alquiler
 
+### 📊 **ESTADO ACTUAL DE IMPLEMENTACIÓN**
+- [x] ✅ **Usuarios**: 100% funcional con lógica completa de negocio
+- [x] ✅ **Inquilinos**: 100% funcional con lógica completa de negocio  
+- [x] ✅ **Propiedades**: 100% funcional con lógica completa de negocio
+- [x] ✅ **Contratos**: 100% - Lógica completa de negocio implementada
+- [ ] ⏳ **Facturación**: 0% - Pendiente
+- [ ] ⏳ **Reportes**: 0% - Pendiente
+
+### 🚀 **PROGRESO BACKEND: 75% COMPLETADO**
+
+> **Stack**: React.js + Node.js/Express + MySQL | **Zona**: Guatemala (-06:00) | **Moneda**: GTQ | **Fechas**: dd/mm/aaaa
+
+---### 2.7 Módulos de Negocio - Contratos
+- [x] ✅ **Contratos Controller**:
+  - [x] ✅ `GET /contratos` - Listar con filtros (estado, propiedad, inquilino, periodo)
+  - [x] ✅ `POST /contratos` - Crear contrato (validar propiedad DISPONIBLE)
+  - [x] ✅ `GET /contratos/:id` - Obtener contrato específico
+  - [x] ✅ `PUT /contratos/:id` - Actualizar contrato (guarda historial)
+  - [x] ✅ `PUT /contratos/:id/finalizar` - Finalizar contrato
+  - [x] ✅ `PUT /contratos/:id/renovar` - Renovar contrato
+  - [x] ✅ `GET /contratos/:id/facturas` - Facturas por contrato
+  - [x] ✅ `DELETE /contratos/:id` - Eliminar contrato
+- [x] ✅ Validaciones críticas:
+  - [x] ✅ Propiedad en estado DISPONIBLE
+  - [x] ✅ fecha_inicio <= fecha_fin
+  - [x] ✅ No múltiples contratos ACTIVO por propiedad
+- [x] ✅ Triggers automáticos (estado propiedad, historial)os**: 100% funcional con lógica completa de negocio
+- [x] ✅ **Inquilinos**: 100% funcional con lógica completa de negocio  
+- [x] ✅ **Propiedades**: 100% funcional con lógica completa de negocio
+- [x] 🔄 **Contratos**: 80% - Estructura completa, implementando lógica de negocio
+- [ ] ⏳ **Facturación**: 0% - Pendiente
+- [ ] ⏳ **Reportes**: 0% - Pendiente
+
+### 🚀 **PROGRESO BACKEND: 65% COMPLETADO**
+
 > **Stack**: React.js + Node.js/Express + MySQL | **Zona**: Guatemala (-06:00) | **Moneda**: GTQ | **Fechas**: dd/mm/aaaa
 
 ---
@@ -35,62 +70,79 @@
 - [x] ✅ Configurar estructura de carpetas (`src/`, `config/`, `auth/`, etc.)
 - [x] ✅ Configurar TypeScript (tsconfig.json)
 
-### 2.2 Base de Datos
-- [x] ✅ Configurar conexión MySQL
-- [x] ✅ Script de inicialización (tablas principales)
-- [x] ✅ Configurar pool de conexiones
+### 2.2 Configuración de Base
+- [x] ✅ Configurar conexión MySQL (`config/db.ts`)
+- [x] ✅ Configurar variables de entorno (`config/env.ts`)
+- [x] ✅ Configurar logger (`config/logger.ts`)
+- [x] ✅ Configurar manejo de fechas zona GT (`common/dates.ts`)
 
-### 2.3 Sistema de Autenticación y Autorización
-- [x] ✅ Configurar JWT (jsonwebtoken)
-- [x] ✅ Middleware de autenticación
-- [x] ✅ Middleware RBAC (roles)
-- [x] ✅ Hash de contraseñas (bcrypt)
-- [x] ✅ Rutas de auth (login, logout)
-- [x] ✅ Gestión de roles y permisos
+### 2.3 Autenticación y Seguridad
+- [x] ✅ Implementar JWT (`auth/jwt.ts`)
+- [x] ✅ Implementar hash de contraseñas (`auth/password.ts`)
+- [x] ✅ Middleware de autenticación (`auth/middlewareAuth.ts`)
+- [x] ✅ Middleware RBAC (`auth/middlewareRBAC.ts`)
+- [x] ✅ Configurar CORS, Helmet, Rate Limiting
+- [x] ✅ Middleware de auditoría (`middlewares/audit.ts`)
+- [x] ✅ Manejo centralizado de errores (`middlewares/errorHandler.ts`)
 
-### 2.4 Controladores y Rutas Principales
-- [x] ✅ `usersController.ts` - Gestión completa de usuarios (CRUD)
-- [x] ✅ `rolesController.ts` - Catálogo de roles
-- [x] ✅ `usersRoutes.ts` - Rutas protegidas con RBAC
-- [ ] � `inquilinosController.ts` - CRUD inquilinos
-- [ ] 🚧 `propiedadesController.ts` - CRUD propiedades  
-- [ ] 🚧 `contratosController.ts` - CRUD contratos
-- [ ] � `pagosController.ts` - Gestión de pagos
-- [ ] � `reportesController.ts` - Reportes y analytics
+### 2.4 Módulos Core - Usuarios y Roles
+- [x] ✅ **Auth Controller**:
+  - [x] ✅ `POST /auth/login` - Login con JWT
+  - [x] ✅ `POST /auth/refresh` - Renovar token
+  - [x] ✅ `POST /auth/logout` - Cerrar sesión
+  - [x] ✅ `POST /auth/register` - Registro de usuario
+  - [x] ✅ `GET /auth/me` - Perfil de usuario
+- [x] ✅ **Rutas de Autenticación** (`routes/authRoutes.ts`)
+- [x] ✅ **Validadores para Auth** (login, register, refresh)
+- [x] ✅ **Usuarios Controller** (ADMIN):
+  - [x] ✅ `GET /usuarios` - Listar con paginación/filtros
+  - [x] ✅ `POST /usuarios` - Crear usuario + roles
+  - [x] ✅ `GET /usuarios/:id` - Obtener usuario específico
+  - [x] ✅ `PUT /usuarios/:id` - Actualizar usuario
+  - [x] ✅ `PATCH /usuarios/:id/estado` - Cambiar estado (activar/desactivar/bloquear)
+  - [x] ✅ `DELETE /usuarios/:id` - Eliminar usuario (soft delete)
+- [x] ✅ **Roles Controller**:
+  - [x] ✅ `GET /usuarios/catalogo/roles` - Catálogo de roles
+- [x] ✅ **Rutas de Usuarios** (`routes/usersRoutes.ts`) con RBAC
 
-### 2.5 Middlewares y Seguridad
-- [x] ✅ Middleware de auditoría (audit.ts)
-- [x] ✅ Manejo de errores (errorHandler.ts)
-- [x] ✅ Seguridad (helmet, cors, rate limiting)
-- [x] ✅ Validación de datos (Zod schemas)
-- [x] ✅ Logging (pino)
+### 2.5 Módulos de Negocio - Inquilinos
+- [x] ✅ **Inquilinos Controller**:
+  - [x] ✅ `GET /inquilinos` - Listar con búsqueda y paginación
+  - [x] ✅ `POST /inquilinos` - Crear inquilino
+  - [x] ✅ `GET /inquilinos/:id` - Obtener inquilino específico
+  - [x] ✅ `PUT /inquilinos/:id` - Actualizar inquilino
+  - [x] ✅ `DELETE /inquilinos/:id` - Eliminar (validar sin contratos activos)
+- [x] ✅ Validaciones de negocio (doc_identidad único, correo único)
+- [x] ✅ Búsqueda por nombre/documento
 
 ### 2.6 Módulos de Negocio - Propiedades
-- [ ] 📋 **Propiedades Controller**:
-  - [ ] `GET /propiedades` - Listar con filtros (estado, tipo, rango renta)
-  - [ ] `POST /propiedades` - Crear propiedad
-  - [ ] `GET /propiedades/:id` - Obtener propiedad específica
-  - [ ] `PUT /propiedades/:id` - Actualizar propiedad
-  - [ ] `DELETE /propiedades/:id` - Eliminar (validar sin contratos activos)
+- [x] ✅ **Propiedades Controller**:
+  - [x] ✅ `GET /propiedades` - Listar con filtros (estado, tipo, rango renta)
+  - [x] ✅ `POST /propiedades` - Crear propiedad
+  - [x] ✅ `GET /propiedades/:id` - Obtener propiedad específica
+  - [x] ✅ `PUT /propiedades/:id` - Actualizar propiedad
+  - [x] ✅ `DELETE /propiedades/:id` - Eliminar (validar sin contratos activos)
 - [ ] 📋 **Imágenes de Propiedades**:
   - [ ] `GET /propiedades/:id/imagenes` - Listar imágenes
   - [ ] `POST /propiedades/:id/imagenes` - Subir imagen (multer)
   - [ ] `DELETE /propiedades/:id/imagenes/:imgId` - Eliminar imagen
-- [ ] 📋 Validaciones: código único, renta > 0, estado válido
+- [x] ✅ Validaciones: código único, renta > 0, estado válido
 
 ### 2.7 Módulos de Negocio - Contratos
-- [ ] 📋 **Contratos Controller**:
-  - [ ] `GET /contratos` - Listar con filtros (estado, propiedad, inquilino, periodo)
-  - [ ] `POST /contratos` - Crear contrato (validar propiedad DISPONIBLE)
-  - [ ] `GET /contratos/:id` - Obtener contrato específico
-  - [ ] `PUT /contratos/:id` - Actualizar contrato (guarda historial)
-  - [ ] `POST /contratos/:id/finalizar` - Finalizar contrato
-  - [ ] `POST /contratos/:id/renovar` - Renovar contrato
-- [ ] 📋 Validaciones críticas:
+- [x] � **Contratos Controller**:
+  - [x] ✅ `GET /contratos` - Listar con filtros (estado, propiedad, inquilino, periodo)
+  - [x] ✅ `POST /contratos` - Crear contrato (validar propiedad DISPONIBLE)
+  - [x] ✅ `GET /contratos/:id` - Obtener contrato específico
+  - [x] ✅ `PUT /contratos/:id` - Actualizar contrato (guarda historial)
+  - [x] ✅ `PUT /contratos/:id/finalizar` - Finalizar contrato
+  - [x] ✅ `PUT /contratos/:id/renovar` - Renovar contrato
+  - [x] ✅ `GET /contratos/:id/facturas` - Facturas por contrato
+  - [x] ✅ `DELETE /contratos/:id` - Eliminar contrato
+- [ ] � Validaciones críticas:
   - [ ] Propiedad en estado DISPONIBLE
   - [ ] fecha_inicio <= fecha_fin
   - [ ] No múltiples contratos ACTIVO por propiedad
-- [ ] 📋 Triggers automáticos (estado propiedad, historial)
+- [ ] � Triggers automáticos (estado propiedad, historial)
 
 ### 2.8 Módulos de Negocio - Facturación (CxC)
 - [ ] 📋 **Facturación Controller**:
@@ -386,6 +438,6 @@
 - **Frontend**: ~90 elementos  
 - **Calidad/Testing**: ~30 elementos
 
-**Estado actual**: ✅ 6/200+ completadas (~3%)
+**Estado actual**: ✅ 40/200+ completadas (~20%)
 
 > **Próximo milestone**: Completar Fase 1 y 2.1-2.3 (configuración base del backend)

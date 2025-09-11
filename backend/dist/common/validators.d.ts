@@ -83,13 +83,13 @@ export declare const userCreateSchema: z.ZodObject<{
 }, "strip", z.ZodTypeAny, {
     roles: number[];
     correo: string;
-    contrasena: string;
     nombre_completo: string;
+    contrasena: string;
 }, {
     roles: number[];
     correo: string;
-    contrasena: string;
     nombre_completo: string;
+    contrasena: string;
 }>;
 export declare const userUpdateSchema: z.ZodObject<Omit<{
     correo: z.ZodOptional<z.ZodString>;
@@ -113,14 +113,14 @@ export declare const inquilinoCreateSchema: z.ZodObject<{
     direccion: z.ZodOptional<z.ZodString>;
 }, "strip", z.ZodTypeAny, {
     nombre_completo: string;
-    telefono?: string | undefined;
     correo?: string | undefined;
+    telefono?: string | undefined;
     doc_identidad?: string | undefined;
     direccion?: string | undefined;
 }, {
     nombre_completo: string;
-    telefono?: string | undefined;
     correo?: string | undefined;
+    telefono?: string | undefined;
     doc_identidad?: string | undefined;
     direccion?: string | undefined;
 }>;
@@ -131,15 +131,15 @@ export declare const inquilinoUpdateSchema: z.ZodObject<{
     correo: z.ZodOptional<z.ZodOptional<z.ZodString>>;
     direccion: z.ZodOptional<z.ZodOptional<z.ZodString>>;
 }, "strip", z.ZodTypeAny, {
-    telefono?: string | undefined;
     correo?: string | undefined;
     nombre_completo?: string | undefined;
+    telefono?: string | undefined;
     doc_identidad?: string | undefined;
     direccion?: string | undefined;
 }, {
-    telefono?: string | undefined;
     correo?: string | undefined;
     nombre_completo?: string | undefined;
+    telefono?: string | undefined;
     doc_identidad?: string | undefined;
     direccion?: string | undefined;
 }>;
@@ -327,13 +327,13 @@ declare const _default: {
     }, "strip", z.ZodTypeAny, {
         roles: number[];
         correo: string;
-        contrasena: string;
         nombre_completo: string;
+        contrasena: string;
     }, {
         roles: number[];
         correo: string;
-        contrasena: string;
         nombre_completo: string;
+        contrasena: string;
     }>;
     userUpdateSchema: z.ZodObject<Omit<{
         correo: z.ZodOptional<z.ZodString>;
@@ -357,14 +357,14 @@ declare const _default: {
         direccion: z.ZodOptional<z.ZodString>;
     }, "strip", z.ZodTypeAny, {
         nombre_completo: string;
-        telefono?: string | undefined;
         correo?: string | undefined;
+        telefono?: string | undefined;
         doc_identidad?: string | undefined;
         direccion?: string | undefined;
     }, {
         nombre_completo: string;
-        telefono?: string | undefined;
         correo?: string | undefined;
+        telefono?: string | undefined;
         doc_identidad?: string | undefined;
         direccion?: string | undefined;
     }>;
@@ -375,15 +375,15 @@ declare const _default: {
         correo: z.ZodOptional<z.ZodOptional<z.ZodString>>;
         direccion: z.ZodOptional<z.ZodOptional<z.ZodString>>;
     }, "strip", z.ZodTypeAny, {
-        telefono?: string | undefined;
         correo?: string | undefined;
         nombre_completo?: string | undefined;
+        telefono?: string | undefined;
         doc_identidad?: string | undefined;
         direccion?: string | undefined;
     }, {
-        telefono?: string | undefined;
         correo?: string | undefined;
         nombre_completo?: string | undefined;
+        telefono?: string | undefined;
         doc_identidad?: string | undefined;
         direccion?: string | undefined;
     }>;

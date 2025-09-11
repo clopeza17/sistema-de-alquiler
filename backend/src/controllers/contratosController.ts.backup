@@ -1,0 +1,61 @@
+import { Request, Response } from 'express';
+
+export const getContratos = async (req: Request, res: Response) => {
+  res.json({
+    success: true,
+    data: [],
+    message: 'Módulo de contratos en pruebas'
+  });
+};
+
+export const getContratoById = async (req: Request, res: Response) => {
+  res.json({
+    success: true,
+    data: { id: req.params.id },
+    message: 'Contrato específico en pruebas'
+  });
+};
+
+export const createContrato = async (req: Request, res: Response) => {
+  res.status(201).json({
+    success: true,
+    data: { id: 1, ...req.body },
+    message: 'Contrato creado en modo prueba'
+  });
+};
+
+export const updateContrato = async (req: Request, res: Response) => {
+  res.json({
+    success: true,
+    message: 'Contrato actualizado en modo prueba'
+  });
+};
+
+export const deleteContrato = async (req: Request, res: Response) => {
+  res.json({
+    success: true,
+    message: 'Contrato eliminado en modo prueba'
+  });
+};
+
+export const finalizarContrato = async (req: Request, res: Response) => {
+  res.json({
+    success: true,
+    message: 'Contrato finalizado en modo prueba'
+  });
+};
+
+export const renovarContrato = async (req: Request, res: Response) => {
+  res.json({
+    success: true,
+    message: 'Contrato renovado en modo prueba'
+  });
+};
+
+export const getFacturasContrato = async (req: Request, res: Response) => {
+  res.json({
+    success: true,
+    data: [],
+    message: 'Facturas en modo prueba'
+  });
+};

@@ -1,5 +1,18 @@
 import { createAuthLogger } from '../config/logger.js';
 const logger = createAuthLogger();
+const DB_ROLE_MAPPING = {
+    'Administrador': 'ADMIN',
+    'ADMIN': 'ADMIN',
+    'Agente': 'AGENTE',
+    'AGENTE': 'AGENTE',
+    'Propietario': 'PROPIETARIO',
+    'PROPIETARIO': 'PROPIETARIO',
+    'Inquilino': 'INQUILINO',
+    'INQUILINO': 'INQUILINO'
+};
+function normalizeRole(dbRole) {
+    return DB_ROLE_MAPPING[dbRole];
+}
 const ROLE_PERMISSIONS = {
     ADMIN: [
         'users.read', 'users.create', 'users.update', 'users.delete',
@@ -29,13 +42,6 @@ const ROLE_PERMISSIONS = {
         'contracts.read', 'contracts.create', 'contracts.update',
         'payments.read',
         'documents.read', 'documents.create'
-    ],
-    OPERADOR: [
-        'users.read', 'users.create', 'users.update',
-        'properties.read', 'properties.create', 'properties.update',
-        'contracts.read', 'contracts.create', 'contracts.update',
-        'payments.read', 'payments.create', 'payments.update',
-        'documents.read', 'documents.create', 'documents.update'
     ]
 };
 export function hasPermission(roles, permission) {
@@ -52,12 +58,16 @@ export function requireRoles(...requiredRoles) {
             });
             return;
         }
-        const userRoles = req.user.roles;
+        const rawUserRoles = req.user.roles;
+        const userRoles = rawUserRoles
+            .map(role => normalizeRole(role))
+            .filter((role) => role !== undefined);
         const hasRequiredRole = requiredRoles.some(role => userRoles.includes(role));
         if (!hasRequiredRole) {
             logger.warn({
                 userId: req.user.userId,
-                userRoles,
+                rawUserRoles,
+                normalizedUserRoles: userRoles,
                 requiredRoles,
                 endpoint: req.path,
                 method: req.method,
@@ -72,7 +82,8 @@ export function requireRoles(...requiredRoles) {
         }
         logger.debug({
             userId: req.user.userId,
-            userRoles,
+            rawUserRoles,
+            normalizedUserRoles: userRoles,
             requiredRoles,
             endpoint: req.path,
         }, 'Acceso autorizado por rol');
@@ -90,12 +101,16 @@ export function requirePermissions(...requiredPermissions) {
             });
             return;
         }
-        const userRoles = req.user.roles;
+        const rawUserRoles = req.user.roles;
+        const userRoles = rawUserRoles
+            .map(role => normalizeRole(role))
+            .filter((role) => role !== undefined);
         const hasAllPermissions = requiredPermissions.every(permission => hasPermission(userRoles, permission));
         if (!hasAllPermissions) {
             logger.warn({
                 userId: req.user.userId,
-                userRoles,
+                rawUserRoles,
+                normalizedUserRoles: userRoles,
                 requiredPermissions,
                 endpoint: req.path,
                 method: req.method,
@@ -110,7 +125,7 @@ export function requirePermissions(...requiredPermissions) {
         }
         logger.debug({
             userId: req.user.userId,
-            userRoles,
+            normalizedUserRoles: userRoles,
             requiredPermissions,
             endpoint: req.path,
         }, 'Acceso autorizado por permisos');

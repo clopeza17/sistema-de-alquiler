@@ -13,13 +13,9 @@ export const corsOptions = {
             'http://localhost:5173',
             'http://127.0.0.1:3000',
             'http://127.0.0.1:5173',
-            'file://',
         ];
         if (env.NODE_ENV === 'production') {
             allowedOrigins.push();
-        }
-        if (env.NODE_ENV === 'development' && origin && origin.startsWith('file://')) {
-            return callback(null, true);
         }
         if (!origin || allowedOrigins.indexOf(origin) !== -1) {
             callback(null, true);

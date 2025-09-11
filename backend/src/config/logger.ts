@@ -40,9 +40,4 @@ export const createAuthLogger = () => {
   return logger.child({ name: 'auth' });
 };
 
-// Función para log de módulos de negocio
-export const createBusinessLogger = (module: string) => {
-  return logger.child({ name: `business-${module}` });
-};
-
 export default logger;

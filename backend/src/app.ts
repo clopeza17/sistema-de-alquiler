@@ -25,9 +25,7 @@ import { auditMiddleware } from './middlewares/audit.js';
 // Importar rutas
 import authRoutes from './routes/authRoutes.js';
 import usersRoutes from './routes/usersRoutes.js';
-import inquilinosRoutes from './routes/inquilinosRoutes.js';
-import propiedadesRoutes from './routes/propiedadesRoutes.js';
-// import contratosRoutes from './routes/contratosRoutes.js';
+import contratosRoutes from './routes/contratosRoutes.js';
 
 // Crear aplicación Express
 const app = express();
@@ -89,9 +87,17 @@ app.get('/', (_req, res) => {
 // API routes
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/usuarios', usersRoutes);
-app.use('/api/v1/inquilinos', inquilinosRoutes);
-app.use('/api/v1/propiedades', propiedadesRoutes);
-// app.use('/api/v1/contratos', contratosRoutes);
+app.use('/api/v1/contratos', contratosRoutes);
+
+// API routes prefix - TODO: agregar rutas de módulos
+app.use('/api/v1', (_req, res, _next) => {
+  res.status(404).json({
+    error: {
+      code: 'ENDPOINT_NOT_IMPLEMENTED',
+      message: 'Endpoint en desarrollo'
+    }
+  });
+});
 
 // ========== MANEJO DE ERRORES (al final) ==========
 

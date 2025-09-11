@@ -6,7 +6,28 @@ const logger = createAuthLogger();
 /**
  * Tipos de roles del sistema
  */
-export type SystemRole = 'ADMIN' | 'PROPIETARIO' | 'INQUILINO' | 'AGENTE' | 'OPERADOR';
+export type SystemRole = 'ADMIN' | 'PROPIETARIO' | 'INQUILINO' | 'AGENTE';
+
+/**
+ * Mapeo de roles de base de datos a roles del sistema
+ */
+const DB_ROLE_MAPPING: Record<string, SystemRole> = {
+  'Administrador': 'ADMIN',
+  'ADMIN': 'ADMIN',
+  'Agente': 'AGENTE',
+  'AGENTE': 'AGENTE',
+  'Propietario': 'PROPIETARIO',
+  'PROPIETARIO': 'PROPIETARIO',
+  'Inquilino': 'INQUILINO',
+  'INQUILINO': 'INQUILINO'
+};
+
+/**
+ * Normaliza un rol de la base de datos al rol del sistema
+ */
+function normalizeRole(dbRole: string): SystemRole | undefined {
+  return DB_ROLE_MAPPING[dbRole];
+}
 
 /**
  * Permisos específicos del sistema
@@ -66,15 +87,6 @@ const ROLE_PERMISSIONS: Record<SystemRole, Permission[]> = {
     'contracts.read', 'contracts.create', 'contracts.update',
     'payments.read',
     'documents.read', 'documents.create'
-  ],
-
-  OPERADOR: [
-    // Personal operativo con amplios permisos para gestión diaria
-    'users.read', 'users.create', 'users.update',
-    'properties.read', 'properties.create', 'properties.update',
-    'contracts.read', 'contracts.create', 'contracts.update',
-    'payments.read', 'payments.create', 'payments.update',
-    'documents.read', 'documents.create', 'documents.update'
   ]
 };
 
@@ -100,13 +112,19 @@ export function requireRoles(...requiredRoles: SystemRole[]) {
       return;
     }
 
-    const userRoles = req.user.roles as SystemRole[];
+    // Normalizar roles del usuario desde la BD al formato del sistema
+    const rawUserRoles = req.user.roles as string[];
+    const userRoles = rawUserRoles
+      .map(role => normalizeRole(role))
+      .filter((role): role is SystemRole => role !== undefined);
+    
     const hasRequiredRole = requiredRoles.some(role => userRoles.includes(role));
 
     if (!hasRequiredRole) {
       logger.warn({
         userId: req.user.userId,
-        userRoles,
+        rawUserRoles,
+        normalizedUserRoles: userRoles,
         requiredRoles,
         endpoint: req.path,
         method: req.method,
@@ -123,7 +141,8 @@ export function requireRoles(...requiredRoles: SystemRole[]) {
 
     logger.debug({
       userId: req.user.userId,
-      userRoles,
+      rawUserRoles,
+      normalizedUserRoles: userRoles,
       requiredRoles,
       endpoint: req.path,
     }, 'Acceso autorizado por rol');
@@ -147,7 +166,12 @@ export function requirePermissions(...requiredPermissions: Permission[]) {
       return;
     }
 
-    const userRoles = req.user.roles as SystemRole[];
+    // Normalizar roles del usuario desde la BD al formato del sistema
+    const rawUserRoles = req.user.roles as string[];
+    const userRoles = rawUserRoles
+      .map(role => normalizeRole(role))
+      .filter((role): role is SystemRole => role !== undefined);
+    
     const hasAllPermissions = requiredPermissions.every(permission => 
       hasPermission(userRoles, permission)
     );
@@ -155,7 +179,8 @@ export function requirePermissions(...requiredPermissions: Permission[]) {
     if (!hasAllPermissions) {
       logger.warn({
         userId: req.user.userId,
-        userRoles,
+        rawUserRoles,
+        normalizedUserRoles: userRoles,
         requiredPermissions,
         endpoint: req.path,
         method: req.method,
@@ -172,7 +197,7 @@ export function requirePermissions(...requiredPermissions: Permission[]) {
 
     logger.debug({
       userId: req.user.userId,
-      userRoles,
+      normalizedUserRoles: userRoles,
       requiredPermissions,
       endpoint: req.path,
     }, 'Acceso autorizado por permisos');

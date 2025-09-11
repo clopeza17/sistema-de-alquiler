@@ -6,8 +6,7 @@ import { errorHandler, notFoundHandler, requestLogger, } from './middlewares/err
 import { auditMiddleware } from './middlewares/audit.js';
 import authRoutes from './routes/authRoutes.js';
 import usersRoutes from './routes/usersRoutes.js';
-import inquilinosRoutes from './routes/inquilinosRoutes.js';
-import propiedadesRoutes from './routes/propiedadesRoutes.js';
+import contratosRoutes from './routes/contratosRoutes.js';
 const app = express();
 app.use(ipBlocker);
 app.use(securityLogger);
@@ -39,8 +38,15 @@ app.get('/', (_req, res) => {
 });
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/usuarios', usersRoutes);
-app.use('/api/v1/inquilinos', inquilinosRoutes);
-app.use('/api/v1/propiedades', propiedadesRoutes);
+app.use('/api/v1/contratos', contratosRoutes);
+app.use('/api/v1', (_req, res, _next) => {
+    res.status(404).json({
+        error: {
+            code: 'ENDPOINT_NOT_IMPLEMENTED',
+            message: 'Endpoint en desarrollo'
+        }
+    });
+});
 app.use(notFoundHandler);
 app.use(errorHandler);
 export default app;
