@@ -4,6 +4,25 @@
 
 ---
 
+## ✅ PROGRESO DE IMPLEMENTACIÓN
+
+### Backend - Módulos Completados:
+- ✅ **Infraestructura Base**: Configuración Express, MySQL, middlewares de seguridad
+- ✅ **Autenticación**: JWT, bcrypt, login/logout, middleware de auth
+- ✅ **Autorización**: RBAC con roles ADMIN/OPERADOR, middleware de permisos
+- ✅ **Inquilinos**: CRUD completo, validaciones, paginación, búsqueda, soft delete, auditoría
+- ✅ **Propiedades**: CRUD completo, gestión de imágenes, filtros, búsqueda, auditoría
+
+### Backend - Pendientes:
+- 🚧 **Contratos**: EN PROGRESO - Módulo implementado, resolviendo problemas de compilación TypeScript
+- ⏳ **Facturación**: Generación automática y gestión de facturas
+- ⏳ **Pagos**: Registro y aplicación de pagos a facturas
+- ⏳ **Gastos Fijos**: Gestión de gastos por propiedad
+- ⏳ **Mantenimiento**: Sistema de tickets de mantenimiento
+- ⏳ **Reportes**: Endpoints para vistas y exportación
+
+---
+
 ## 1) Especificaciones del Backend (Node.js + Express)
 
 ### 1.1 Estructura de proyecto (sugerida)

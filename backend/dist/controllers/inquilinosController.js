@@ -29,7 +29,7 @@ export const getInquilinos = asyncHandler(async (req, res) => {
      FROM inquilinos 
      ${whereClause}
      ORDER BY nombre_completo ASC
-     LIMIT ? OFFSET ?`, [...params, limit, offset]);
+     LIMIT ? OFFSET ?`, [...params, String(limit), String(offset)]);
     logger.info({
         page,
         limit,

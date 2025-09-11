@@ -21,7 +21,7 @@ export const login = asyncHandler(async (req, res) => {
         await auditAction(req, 'LOGIN', 'SESSION', user.id, { email }, false, 'Contraseña incorrecta');
         throw new UnauthorizedError('Credenciales inválidas');
     }
-    const [roleRows] = await pool.execute(`SELECT r.nombre 
+    const [roleRows] = await pool.execute(`SELECT r.codigo as nombre
      FROM usuarios_roles ur 
      JOIN roles r ON ur.rol_id = r.id 
      WHERE ur.usuario_id = ?`, [user.id]);

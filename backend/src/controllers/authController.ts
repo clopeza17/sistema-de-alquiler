@@ -72,7 +72,7 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
 
   // Obtener roles del usuario
   const [roleRows] = await pool.execute<UserRoleRow[]>(
-    `SELECT r.nombre 
+    `SELECT r.codigo as nombre
      FROM usuarios_roles ur 
      JOIN roles r ON ur.rol_id = r.id 
      WHERE ur.usuario_id = ?`,
