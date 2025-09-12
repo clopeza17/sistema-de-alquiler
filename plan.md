@@ -6,9 +6,13 @@
 - [x] ✅ **Propiedades**: 100% funcional con lógica completa de negocio
 - [x] ✅ **Contratos**: 100% - Lógica completa de negocio implementada
 - [ ] ⏳ **Facturación**: 0% - Pendiente
+- [ ] ⏳ **Pagos**: 0% - Pendiente
+- [ ] ⏳ **Aplicaciones de Pago**: 0% - Pendiente
+- [ ] ⏳ **Gastos Fijos**: 0% - Pendiente
+- [ ] ⏳ **Mantenimiento**: 0% - Pendiente
 - [ ] ⏳ **Reportes**: 0% - Pendiente
 
-### 🚀 **PROGRESO BACKEND: 75% COMPLETADO**
+### 🚀 **PROGRESO BACKEND: 50% COMPLETADO**
 
 > **Stack**: React.js + Node.js/Express + MySQL | **Zona**: Guatemala (-06:00) | **Moneda**: GTQ | **Fechas**: dd/mm/aaaa
 
@@ -26,123 +30,7 @@
   - [x] ✅ Propiedad en estado DISPONIBLE
   - [x] ✅ fecha_inicio <= fecha_fin
   - [x] ✅ No múltiples contratos ACTIVO por propiedad
-- [x] ✅ Triggers automáticos (estado propiedad, historial)os**: 100% funcional con lógica completa de negocio
-- [x] ✅ **Inquilinos**: 100% funcional con lógica completa de negocio  
-- [x] ✅ **Propiedades**: 100% funcional con lógica completa de negocio
-- [x] 🔄 **Contratos**: 80% - Estructura completa, implementando lógica de negocio
-- [ ] ⏳ **Facturación**: 0% - Pendiente
-- [ ] ⏳ **Reportes**: 0% - Pendiente
-
-### 🚀 **PROGRESO BACKEND: 65% COMPLETADO**
-
-> **Stack**: React.js + Node.js/Express + MySQL | **Zona**: Guatemala (-06:00) | **Moneda**: GTQ | **Fechas**: dd/mm/aaaa
-
----
-
-## 🏗️ **FASE 1: PREPARACIÓN E INFRAESTRUCTURA**
-
-### 1.1 Configuración Base
-- [x] ✅ Configurar Docker + MySQL (ARM64 optimizado)
-- [x] ✅ Crear esquema de base de datos completo
-- [x] ✅ Configurar variables de entorno (.env)
-- [ ] 📋 Crear repositorio Git con estructura inicial
-- [ ] 📋 Configurar .gitignore completo
-- [ ] 📋 Documentar instalación y despliegue local
-
-### 1.2 Estructura de Proyectos
-- [x] ✅ Crear estructura del backend (`backend/`)
-- [ ] 📋 Crear estructura del frontend (`frontend/`)
-- [x] ✅ Configurar TypeScript (opcional pero recomendado)
-- [ ] 📋 Configurar ESLint + Prettier
-- [x] ✅ Configurar scripts NPM (`dev`, `build`, `test`, `start`)
-
----
-
-## 🔧 **FASE 2: BACKEND (Node.js + Express)**
-
-### 2.1 Configuración Inicial del Backend
-- [x] ✅ Inicializar proyecto Node.js (`npm init`)
-- [x] ✅ Instalar dependencias principales:
-  - [x] ✅ Express, mysql2, jsonwebtoken, bcrypt
-  - [x] ✅ helmet, cors, express-rate-limit
-  - [x] ✅ dotenv, zod, pino, dayjs
-  - [x] ✅ multer, swagger-ui-express
-- [x] ✅ Configurar estructura de carpetas (`src/`, `config/`, `auth/`, etc.)
-- [x] ✅ Configurar TypeScript (tsconfig.json)
-
-### 2.2 Configuración de Base
-- [x] ✅ Configurar conexión MySQL (`config/db.ts`)
-- [x] ✅ Configurar variables de entorno (`config/env.ts`)
-- [x] ✅ Configurar logger (`config/logger.ts`)
-- [x] ✅ Configurar manejo de fechas zona GT (`common/dates.ts`)
-
-### 2.3 Autenticación y Seguridad
-- [x] ✅ Implementar JWT (`auth/jwt.ts`)
-- [x] ✅ Implementar hash de contraseñas (`auth/password.ts`)
-- [x] ✅ Middleware de autenticación (`auth/middlewareAuth.ts`)
-- [x] ✅ Middleware RBAC (`auth/middlewareRBAC.ts`)
-- [x] ✅ Configurar CORS, Helmet, Rate Limiting
-- [x] ✅ Middleware de auditoría (`middlewares/audit.ts`)
-- [x] ✅ Manejo centralizado de errores (`middlewares/errorHandler.ts`)
-
-### 2.4 Módulos Core - Usuarios y Roles
-- [x] ✅ **Auth Controller**:
-  - [x] ✅ `POST /auth/login` - Login con JWT
-  - [x] ✅ `POST /auth/refresh` - Renovar token
-  - [x] ✅ `POST /auth/logout` - Cerrar sesión
-  - [x] ✅ `POST /auth/register` - Registro de usuario
-  - [x] ✅ `GET /auth/me` - Perfil de usuario
-- [x] ✅ **Rutas de Autenticación** (`routes/authRoutes.ts`)
-- [x] ✅ **Validadores para Auth** (login, register, refresh)
-- [x] ✅ **Usuarios Controller** (ADMIN):
-  - [x] ✅ `GET /usuarios` - Listar con paginación/filtros
-  - [x] ✅ `POST /usuarios` - Crear usuario + roles
-  - [x] ✅ `GET /usuarios/:id` - Obtener usuario específico
-  - [x] ✅ `PUT /usuarios/:id` - Actualizar usuario
-  - [x] ✅ `PATCH /usuarios/:id/estado` - Cambiar estado (activar/desactivar/bloquear)
-  - [x] ✅ `DELETE /usuarios/:id` - Eliminar usuario (soft delete)
-- [x] ✅ **Roles Controller**:
-  - [x] ✅ `GET /usuarios/catalogo/roles` - Catálogo de roles
-- [x] ✅ **Rutas de Usuarios** (`routes/usersRoutes.ts`) con RBAC
-
-### 2.5 Módulos de Negocio - Inquilinos
-- [x] ✅ **Inquilinos Controller**:
-  - [x] ✅ `GET /inquilinos` - Listar con búsqueda y paginación
-  - [x] ✅ `POST /inquilinos` - Crear inquilino
-  - [x] ✅ `GET /inquilinos/:id` - Obtener inquilino específico
-  - [x] ✅ `PUT /inquilinos/:id` - Actualizar inquilino
-  - [x] ✅ `DELETE /inquilinos/:id` - Eliminar (validar sin contratos activos)
-- [x] ✅ Validaciones de negocio (doc_identidad único, correo único)
-- [x] ✅ Búsqueda por nombre/documento
-
-### 2.6 Módulos de Negocio - Propiedades
-- [x] ✅ **Propiedades Controller**:
-  - [x] ✅ `GET /propiedades` - Listar con filtros (estado, tipo, rango renta)
-  - [x] ✅ `POST /propiedades` - Crear propiedad
-  - [x] ✅ `GET /propiedades/:id` - Obtener propiedad específica
-  - [x] ✅ `PUT /propiedades/:id` - Actualizar propiedad
-  - [x] ✅ `DELETE /propiedades/:id` - Eliminar (validar sin contratos activos)
-- [ ] 📋 **Imágenes de Propiedades**:
-  - [ ] `GET /propiedades/:id/imagenes` - Listar imágenes
-  - [ ] `POST /propiedades/:id/imagenes` - Subir imagen (multer)
-  - [ ] `DELETE /propiedades/:id/imagenes/:imgId` - Eliminar imagen
-- [x] ✅ Validaciones: código único, renta > 0, estado válido
-
-### 2.7 Módulos de Negocio - Contratos
-- [x] � **Contratos Controller**:
-  - [x] ✅ `GET /contratos` - Listar con filtros (estado, propiedad, inquilino, periodo)
-  - [x] ✅ `POST /contratos` - Crear contrato (validar propiedad DISPONIBLE)
-  - [x] ✅ `GET /contratos/:id` - Obtener contrato específico
-  - [x] ✅ `PUT /contratos/:id` - Actualizar contrato (guarda historial)
-  - [x] ✅ `PUT /contratos/:id/finalizar` - Finalizar contrato
-  - [x] ✅ `PUT /contratos/:id/renovar` - Renovar contrato
-  - [x] ✅ `GET /contratos/:id/facturas` - Facturas por contrato
-  - [x] ✅ `DELETE /contratos/:id` - Eliminar contrato
-- [ ] � Validaciones críticas:
-  - [ ] Propiedad en estado DISPONIBLE
-  - [ ] fecha_inicio <= fecha_fin
-  - [ ] No múltiples contratos ACTIVO por propiedad
-- [ ] � Triggers automáticos (estado propiedad, historial)
+- [x] ✅ Triggers automáticos (estado propiedad, historial)
 
 ### 2.8 Módulos de Negocio - Facturación (CxC)
 - [ ] 📋 **Facturación Controller**:
@@ -154,12 +42,20 @@
 - [ ] 📋 Integración con SP `sp_generar_facturas_mensuales`
 - [ ] 📋 Manejo de estados automáticos (ABIERTA, PARCIAL, PAGADA, VENCIDA)
 
-### 2.9 Módulos de Negocio - Pagos y Aplicaciones
+### 2.9 Módulos de Negocio - Pagos
 - [ ] 📋 **Pagos Controller**:
   - [ ] `POST /pagos` - Registrar pago
   - [ ] `GET /pagos` - Listar con filtros (fecha, contrato, forma)
   - [ ] `GET /pagos/:id` - Obtener pago específico
+  - [ ] `PATCH /pagos/:id` - Actualizar pago
+  - [ ] `DELETE /pagos/:id` - Eliminar pago (validar sin aplicaciones)
+- [ ] 📋 Validaciones: monto > 0, forma_pago_id válido
+- [ ] 📋 Estados: PENDIENTE, APLICADO, ANULADO
+
+### 2.10 Módulos de Negocio - Aplicaciones de Pago
+- [ ] 📋 **Aplicaciones Controller**:
   - [ ] `POST /pagos/:id/aplicar` - Aplicar pago a factura
+  - [ ] `GET /pagos/:id/aplicaciones` - Listar aplicaciones de un pago
   - [ ] `DELETE /pagos/:id/aplicaciones/:aplId` - Revertir aplicación
 - [ ] 📋 Validaciones transaccionales:
   - [ ] monto > 0
@@ -167,7 +63,7 @@
   - [ ] transacciones con rollback
 - [ ] 📋 Triggers automáticos (saldos, estados)
 
-### 2.10 Módulos de Negocio - Gastos Fijos
+### 2.11 Módulos de Negocio - Gastos Fijos
 - [ ] 📋 **Gastos Controller**:
   - [ ] `GET /gastos` - Listar con filtros (propiedad, tipo, fecha)
   - [ ] `POST /gastos` - Crear gasto
@@ -176,24 +72,26 @@
 - [ ] 📋 Catálogo de tipos de gasto
 - [ ] 📋 Validaciones: monto >= 0, tipo_gasto_id válido
 
-### 2.11 Módulos de Negocio - Mantenimiento
+### 2.12 Módulos de Negocio - Mantenimiento
 - [ ] 📋 **Mantenimiento Controller**:
   - [ ] `GET /mantenimiento` - Listar solicitudes con filtros
   - [ ] `POST /mantenimiento` - Crear ticket
   - [ ] `PATCH /mantenimiento/:id` - Cambiar estado/prioridad
+  - [ ] `GET /mantenimiento/:id` - Obtener ticket específico
 - [ ] 📋 Estados: ABIERTA, EN_PROCESO, EN_ESPERA, RESUELTA, CANCELADA
 - [ ] 📋 Prioridades: BAJA, MEDIA, ALTA, CRITICA
 
-### 2.12 Módulos de Reportes
+### 2.13 Módulos de Reportes
 - [ ] 📋 **Reportes Controller**:
   - [ ] `GET /reportes/cxc` - Resumen cuentas por cobrar
   - [ ] `GET /reportes/rentabilidad` - Rentabilidad por propiedad
   - [ ] `GET /reportes/ocupacion` - Estado de ocupación
   - [ ] `GET /reportes/descargar` - Exportar PDF/Excel
+  - [ ] `GET /reportes/auditoria` - Registro de eventos de auditoría
 - [ ] 📋 Integración con vistas SQL (v_resumen_cxc, v_rentabilidad_propiedad, v_ocupacion)
 - [ ] 📋 Exportación con exceljs/pdfmake
 
-### 2.13 Testing Backend
+### 2.14 Testing Backend
 - [ ] 📋 Configurar entorno de testing (vitest/jest)
 - [ ] 📋 Tests unitarios - servicios y validadores
 - [ ] 📋 Tests de integración - endpoints con supertest

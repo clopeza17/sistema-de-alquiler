@@ -26,25 +26,23 @@ const logger = createDbLogger();
  */
 interface UserRow extends RowDataPacket {
   id: number;
-  email: string;
-  password: string;
-  nombres: string;
-  apellidos: string;
-  telefono?: string;
-  estado: 'ACTIVO' | 'INACTIVO' | 'BLOQUEADO';
-  ultimo_login?: Date;
-  created_at: Date;
-  updated_at: Date;
+  correo: string;
+  contrasena_hash: string;
+  nombre_completo: string;
+  activo: number;
+  ultimo_acceso_el?: Date;
+  creado_el: Date;
+  actualizado_el: Date;
 }
 
 interface RoleRow extends RowDataPacket {
   id: number;
   nombre: string;
-  descripcion: string;
+  descripcion?: string;
 }
 
 interface UserRoleRow extends RowDataPacket {
-  role_id: number;
+  rol_id: number;
   role_name: string;
 }
 
@@ -56,7 +54,7 @@ const createUserSchema = z.object({
   password: passwordSchema,
   nombres: nameSchema,
   apellidos: nameSchema,
-  telefono: phoneSchema,
+  telefono: phoneSchema.optional(),
   roles: z.array(idSchema).min(1, 'Usuario debe tener al menos un rol'),
 });
 
@@ -89,22 +87,22 @@ export const getUsers = asyncHandler(async (req: Request, res: Response) => {
   let whereConditions = ['1=1'];
   let queryParams: any[] = [];
   
-  // Filtro por búsqueda (nombre, apellido o email)
+  // Filtro por búsqueda (nombre completo o correo)
   if (search) {
-    whereConditions.push('(u.nombres LIKE ? OR u.apellidos LIKE ? OR u.email LIKE ?)');
+    whereConditions.push('(u.nombre_completo LIKE ? OR u.correo LIKE ?)');
     const searchPattern = `%${search}%`;
-    queryParams.push(searchPattern, searchPattern, searchPattern);
+    queryParams.push(searchPattern, searchPattern);
   }
   
   // Filtro por estado
   if (estado) {
-    whereConditions.push('u.estado = ?');
-    queryParams.push(estado);
+    whereConditions.push('u.activo = ?');
+    queryParams.push(estado === 'ACTIVO' ? 1 : 0);
   }
   
   // Filtro por rol
   if (role) {
-    whereConditions.push('EXISTS (SELECT 1 FROM user_roles ur JOIN roles r ON ur.role_id = r.id WHERE ur.user_id = u.id AND r.nombre = ?)');
+    whereConditions.push('EXISTS (SELECT 1 FROM usuarios_roles ur JOIN roles r ON ur.rol_id = r.id WHERE ur.usuario_id = u.id AND r.nombre = ?)');
     queryParams.push(role);
   }
   
@@ -121,42 +119,40 @@ export const getUsers = asyncHandler(async (req: Request, res: Response) => {
   const dataQuery = `
     SELECT 
       u.id,
-      u.email,
-      u.nombres,
-      u.apellidos,
-      u.telefono,
-      u.estado,
-      u.ultimo_login,
-      u.created_at,
-      u.updated_at,
+      u.correo,
+      u.nombre_completo,
+      u.activo,
+      u.ultimo_acceso_el,
+      u.creado_el,
+      u.actualizado_el,
       GROUP_CONCAT(r.nombre) as roles
     FROM usuarios u
-    LEFT JOIN user_roles ur ON u.id = ur.user_id
-    LEFT JOIN roles r ON ur.role_id = r.id
+    LEFT JOIN usuarios_roles ur ON u.id = ur.usuario_id
+    LEFT JOIN roles r ON ur.rol_id = r.id
     WHERE ${whereClause}
-    GROUP BY u.id, u.email, u.nombres, u.apellidos, u.telefono, u.estado, u.ultimo_login, u.created_at, u.updated_at
-    ORDER BY u.created_at DESC
-    LIMIT ? OFFSET ?
+    GROUP BY u.id, u.correo, u.nombre_completo, u.activo, u.ultimo_acceso_el, u.creado_el, u.actualizado_el
+    ORDER BY u.creado_el DESC
+    LIMIT ${limit} OFFSET ${offset}
   `;
   
   // Ejecutar queries
   const [countResult] = await pool.execute<RowDataPacket[]>(countQuery, queryParams);
   const total = countResult[0].total;
   
-  const [users] = await pool.execute<RowDataPacket[]>(dataQuery, [...queryParams, limit, offset]);
+  const [users] = await pool.execute<RowDataPacket[]>(dataQuery, queryParams);
   
   // Formatear datos
-  const formattedUsers = users.map(user => ({
+  const formattedUsers = users.map((user: any) => ({
     id: user.id,
-    email: user.email,
-    nombres: user.nombres,
-    apellidos: user.apellidos,
-    telefono: user.telefono,
-    estado: user.estado,
-    ultimoLogin: user.ultimo_login,
-    roles: user.roles ? user.roles.split(',') : [],
-    createdAt: user.created_at,
-    updatedAt: user.updated_at,
+    email: user.correo,
+    nombres: (user.nombre_completo || '').split(' ').slice(0, -1).join(' ') || user.nombre_completo,
+    apellidos: (user.nombre_completo || '').split(' ').slice(-1).join(' '),
+    telefono: null,
+    estado: user.activo === 1 ? 'ACTIVO' : 'INACTIVO',
+    ultimoLogin: user.ultimo_acceso_el,
+    roles: user.roles ? String(user.roles).split(',') : [],
+    createdAt: user.creado_el,
+    updatedAt: user.actualizado_el,
   }));
   
   const totalPages = Math.ceil(total / limit);
@@ -171,15 +167,13 @@ export const getUsers = asyncHandler(async (req: Request, res: Response) => {
   res.json({
     message: 'Usuarios obtenidos exitosamente',
     data: {
-      users: formattedUsers,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages,
-        hasNext: page < totalPages,
-        hasPrev: page > 1,
-      },
+      items: formattedUsers,
+      total,
+      page,
+      limit,
+      totalPages,
+      hasNext: page < totalPages,
+      hasPrev: page > 1,
     },
   });
 });
@@ -193,7 +187,7 @@ export const createUser = asyncHandler(async (req: Request, res: Response) => {
   
   // Verificar si el email ya existe
   const [existingUsers] = await pool.execute<UserRow[]>(
-    'SELECT id FROM usuarios WHERE email = ?',
+    'SELECT id FROM usuarios WHERE correo = ?',
     [userData.email]
   );
   
@@ -221,15 +215,14 @@ export const createUser = asyncHandler(async (req: Request, res: Response) => {
   
   try {
     // Crear usuario
+    const nombreCompleto = `${userData.nombres} ${userData.apellidos}`.trim();
     const [userResult] = await connection.execute<ResultSetHeader>(
-      `INSERT INTO usuarios (email, password, nombres, apellidos, telefono, estado, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, 'ACTIVO', NOW(), NOW())`,
+      `INSERT INTO usuarios (correo, contrasena_hash, nombre_completo, activo, creado_el, actualizado_el)
+       VALUES (?, ?, ?, 1, NOW(), NOW())`,
       [
         userData.email,
         hashedPassword,
-        userData.nombres,
-        userData.apellidos,
-        userData.telefono || null,
+        nombreCompleto,
       ]
     );
     
@@ -238,7 +231,7 @@ export const createUser = asyncHandler(async (req: Request, res: Response) => {
     // Asignar roles
     for (const roleId of roleIds) {
       await connection.execute(
-        'INSERT INTO user_roles (user_id, role_id, created_at) VALUES (?, ?, NOW())',
+        'INSERT INTO usuarios_roles (usuario_id, rol_id) VALUES (?, ?)',
         [userId, roleId]
       );
     }
@@ -303,10 +296,10 @@ export const getUser = asyncHandler(async (req: Request, res: Response) => {
   
   // Obtener roles
   const [userRoles] = await pool.execute<UserRoleRow[]>(
-    `SELECT r.id as role_id, r.nombre as role_name
-     FROM user_roles ur
-     JOIN roles r ON ur.role_id = r.id
-     WHERE ur.user_id = ?`,
+    `SELECT r.id as rol_id, r.nombre as role_name
+     FROM usuarios_roles ur
+     JOIN roles r ON ur.rol_id = r.id
+     WHERE ur.usuario_id = ?`,
     [userId]
   );
   
@@ -315,18 +308,18 @@ export const getUser = asyncHandler(async (req: Request, res: Response) => {
     data: {
       user: {
         id: user.id,
-        email: user.email,
-        nombres: user.nombres,
-        apellidos: user.apellidos,
-        telefono: user.telefono,
-        estado: user.estado,
-        ultimoLogin: user.ultimo_login,
+        email: user.correo,
+        nombres: (user.nombre_completo || '').split(' ').slice(0, -1).join(' ') || user.nombre_completo,
+        apellidos: (user.nombre_completo || '').split(' ').slice(-1).join(' '),
+        telefono: null,
+        estado: user.activo === 1 ? 'ACTIVO' : 'INACTIVO',
+        ultimoLogin: user.ultimo_acceso_el,
         roles: userRoles.map(ur => ({
-          id: ur.role_id,
+          id: ur.rol_id,
           nombre: ur.role_name,
         })),
-        createdAt: user.created_at,
-        updatedAt: user.updated_at,
+        createdAt: user.creado_el,
+        updatedAt: user.actualizado_el,
       },
     },
   });
@@ -353,9 +346,9 @@ export const updateUser = asyncHandler(async (req: Request, res: Response) => {
   const currentUser = users[0];
   
   // Si se actualiza el email, verificar que no esté en uso
-  if (userData.email && userData.email !== currentUser.email) {
+  if (userData.email && userData.email !== currentUser.correo) {
     const [existingUsers] = await pool.execute<UserRow[]>(
-      'SELECT id FROM usuarios WHERE email = ? AND id != ?',
+      'SELECT id FROM usuarios WHERE correo = ? AND id != ?',
       [userData.email, userId]
     );
     
@@ -389,24 +382,18 @@ export const updateUser = asyncHandler(async (req: Request, res: Response) => {
     const updateValues: any[] = [];
     
     if (userData.email) {
-      updateFields.push('email = ?');
+      updateFields.push('correo = ?');
       updateValues.push(userData.email);
     }
-    if (userData.nombres) {
-      updateFields.push('nombres = ?');
-      updateValues.push(userData.nombres);
-    }
-    if (userData.apellidos) {
-      updateFields.push('apellidos = ?');
-      updateValues.push(userData.apellidos);
-    }
-    if (userData.telefono !== undefined) {
-      updateFields.push('telefono = ?');
-      updateValues.push(userData.telefono || null);
+    const anyNameChanged = userData.nombres || userData.apellidos;
+    if (anyNameChanged) {
+      const nombreCompleto = `${userData.nombres ?? ''} ${userData.apellidos ?? ''}`.trim() || currentUser.nombre_completo;
+      updateFields.push('nombre_completo = ?');
+      updateValues.push(nombreCompleto);
     }
     
     if (updateFields.length > 0) {
-      updateFields.push('updated_at = NOW()');
+      updateFields.push('actualizado_el = NOW()');
       updateValues.push(userId);
       
       await connection.execute(
@@ -418,15 +405,15 @@ export const updateUser = asyncHandler(async (req: Request, res: Response) => {
     // Actualizar roles si se especificaron
     if (userData.roles) {
       // Eliminar roles actuales
-      await connection.execute('DELETE FROM user_roles WHERE user_id = ?', [userId]);
+      await connection.execute('DELETE FROM usuarios_roles WHERE usuario_id = ?', [userId]);
       
       // Asignar nuevos roles
       for (const roleId of userData.roles) {
         await connection.execute(
-          'INSERT INTO user_roles (user_id, role_id, created_at) VALUES (?, ?, NOW())',
-          [userId, roleId]
-        );
-      }
+        'INSERT INTO usuarios_roles (usuario_id, rol_id) VALUES (?, ?)',
+        [userId, roleId]
+      );
+    }
     }
     
     await connection.commit();
@@ -466,7 +453,7 @@ export const updateUser = asyncHandler(async (req: Request, res: Response) => {
 export const changeUserStatus = asyncHandler(async (req: Request, res: Response) => {
   const userId = idSchema.parse(req.params.id);
   const { estado } = z.object({
-    estado: z.enum(['ACTIVO', 'INACTIVO', 'BLOQUEADO']),
+    estado: z.enum(['ACTIVO', 'INACTIVO']),
   }).parse(req.body);
   
   // Verificar que el usuario existe
@@ -488,20 +475,20 @@ export const changeUserStatus = asyncHandler(async (req: Request, res: Response)
   
   // Actualizar estado
   await pool.execute(
-    'UPDATE usuarios SET estado = ?, updated_at = NOW() WHERE id = ?',
-    [estado, userId]
+    'UPDATE usuarios SET activo = ?, actualizado_el = NOW() WHERE id = ?',
+    [estado === 'ACTIVO' ? 1 : 0, userId]
   );
   
   // Auditar cambio de estado
   await auditAction(req, 'UPDATE', 'USER', userId, {
-    estadoAnterior: currentUser.estado,
+    estadoAnterior: currentUser.activo === 1 ? 'ACTIVO' : 'INACTIVO',
     estadoNuevo: estado,
   }, true);
   
   logger.info({
     userId: req.user?.userId,
     targetUserId: userId,
-    estadoAnterior: currentUser.estado,
+    estadoAnterior: currentUser.activo === 1 ? 'ACTIVO' : 'INACTIVO',
     estadoNuevo: estado,
   }, 'Estado de usuario cambiado');
   
@@ -509,7 +496,7 @@ export const changeUserStatus = asyncHandler(async (req: Request, res: Response)
     message: 'Estado de usuario actualizado exitosamente',
     data: {
       userId,
-      estadoAnterior: currentUser.estado,
+      estadoAnterior: currentUser.activo === 1 ? 'ACTIVO' : 'INACTIVO',
       estadoNuevo: estado,
     },
   });
@@ -539,20 +526,20 @@ export const deleteUser = asyncHandler(async (req: Request, res: Response) => {
   
   // Soft delete - cambiar estado a INACTIVO
   await pool.execute(
-    'UPDATE usuarios SET estado = ?, updated_at = NOW() WHERE id = ?',
-    ['INACTIVO', userId]
+    'UPDATE usuarios SET activo = 0, actualizado_el = NOW() WHERE id = ?',
+    [userId]
   );
   
   // Auditar eliminación
   await auditAction(req, 'DELETE', 'USER', userId, {
-    email: users[0].email,
-    nombres: users[0].nombres,
+    email: users[0].correo,
+    nombres: users[0].nombre_completo,
   }, true);
   
   logger.info({
     userId: req.user?.userId,
     deletedUserId: userId,
-    email: users[0].email,
+    email: users[0].correo,
   }, 'Usuario eliminado (soft delete)');
   
   res.json({

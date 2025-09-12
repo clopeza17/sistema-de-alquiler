@@ -12,8 +12,8 @@ const logger = createDbLogger();
 interface RoleRow extends RowDataPacket {
   id: number;
   nombre: string;
-  descripcion: string;
-  created_at: Date;
+  descripcion: string | null;
+  creado_el: Date;
 }
 
 /**
@@ -22,7 +22,7 @@ interface RoleRow extends RowDataPacket {
  */
 export const getRoles = asyncHandler(async (req: Request, res: Response) => {
   const [roles] = await pool.execute<RoleRow[]>(
-    'SELECT id, nombre, descripcion, created_at FROM roles ORDER BY nombre'
+    'SELECT id, nombre, descripcion, creado_el FROM roles ORDER BY nombre'
   );
   
   logger.info({
@@ -36,8 +36,8 @@ export const getRoles = asyncHandler(async (req: Request, res: Response) => {
       roles: roles.map(role => ({
         id: role.id,
         nombre: role.nombre,
-        descripcion: role.descripcion,
-        createdAt: role.created_at,
+        descripcion: role.descripcion ?? undefined,
+        createdAt: role.creado_el,
       })),
     },
   });

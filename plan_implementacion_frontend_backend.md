@@ -31,16 +31,72 @@ backend/
       errorHandler.ts               # manejo centralizado de errores
       audit.ts                      # registra en eventos_auditoria
     modules/
-      usuarios/roles/...            # cada dominio con controller/service/repo/routes/validators
+      usuarios/
+        controller.ts
+        service.ts
+        repository.ts
+        routes.ts
+        validators.ts
+      roles/
+        controller.ts
+        service.ts
+        repository.ts
+        routes.ts
+        validators.ts
       propiedades/
+        controller.ts
+        service.ts
+        repository.ts
+        routes.ts
+        validators.ts
       inquilinos/
+        controller.ts
+        service.ts
+        repository.ts
+        routes.ts
+        validators.ts
       contratos/
+        controller.ts
+        service.ts
+        repository.ts
+        routes.ts
+        validators.ts
       facturas/
+        controller.ts
+        service.ts
+        repository.ts
+        routes.ts
+        validators.ts
       pagos/
-      aplicacionesPago/
-      gastosFijos/
+        controller.ts
+        service.ts
+        repository.ts
+        routes.ts
+        validators.ts
+      aplicaciones/
+        controller.ts
+        service.ts
+        repository.ts
+        routes.ts
+        validators.ts
+      gastos/
+        controller.ts
+        service.ts
+        repository.ts
+        routes.ts
+        validators.ts
       mantenimiento/
+        controller.ts
+        service.ts
+        repository.ts
+        routes.ts
+        validators.ts
       reportes/
+        controller.ts
+        service.ts
+        repository.ts
+        routes.ts
+        validators.ts
     routes.ts                       # agrega rutas por módulo
   test/                             # unitarias e integración (vitest/jest + supertest)
   package.json
@@ -138,39 +194,55 @@ RATE_LIMIT_MAX=120
 - `POST /contratos` — validar: propiedad `DISPONIBLE`, fechas válidas.
 - `GET /contratos/:id`
 - `PUT /contratos/:id` — cambios guardan historial.
-- `POST /contratos/:id/finalizar` — libera propiedad si no quedan activos.
-- `POST /contratos/:id/renovar` — ajusta fechas, historial.
+- `PUT /contratos/:id/finalizar` — libera propiedad si no quedan activos.
+- `PUT /contratos/:id/renovar` — ajusta fechas, historial.
+- `GET /contratos/:id/facturas` — facturas asociadas al contrato.
+- `DELETE /contratos/:id` — eliminar contrato (validar estado).
 
 #### Facturación (Cuentas por Cobrar)
 - `POST /facturacion/generar` — body: { anio, mes, emision, vencimiento } → llama SP mensual.
 - `GET /contratos/:id/facturas` — listar por contrato.
-- `GET /facturas` — filtros: estado, vencimiento.
+- `GET /facturas` — filtros: estado, vencimiento, contrato.
 - `GET /facturas/:id`
 - `PATCH /facturas/:id/anular` (ADMIN)
+- `GET /facturas/catalogo/estados` — catálogo de estados de factura.
 
-#### Pagos & Aplicaciones de Pago
+#### Pagos
 - `POST /pagos` — { contrato_id, forma_pago_id, fecha_pago, monto, referencia }
-- `GET /pagos` — filtros: fecha, contrato, forma.
+- `GET /pagos` — filtros: fecha, contrato, forma, estado.
 - `GET /pagos/:id`
+- `PATCH /pagos/:id` — actualizar datos del pago.
+- `DELETE /pagos/:id` — eliminar si no tiene aplicaciones.
+- `GET /pagos/catalogo/formas-pago` — catálogo de formas de pago.
+
+#### Aplicaciones de Pago
 - `POST /pagos/:id/aplicar` — { factura_id, monto_aplicado }
+- `GET /pagos/:id/aplicaciones` — listar aplicaciones de un pago.
 - `DELETE /pagos/:id/aplicaciones/:aplId` — revierte (triggers ajustan saldos)
+- `GET /aplicaciones` — listar todas las aplicaciones con filtros.
 
 #### Gastos Fijos
-- `GET /gastos` — filtros: propiedad, tipo, fecha.
+- `GET /gastos` — filtros: propiedad, tipo, fecha, monto.
 - `POST /gastos` — { propiedad_id, tipo_gasto_id, fecha_gasto, detalle, monto }
 - `PUT /gastos/:id`
 - `DELETE /gastos/:id`
+- `GET /gastos/catalogo/tipos-gasto` — catálogo de tipos de gasto.
 
 #### Mantenimiento (Solicitudes)
-- `GET /mantenimiento` — filtros: estado, prioridad, propiedad.
+- `GET /mantenimiento` — filtros: estado, prioridad, propiedad, fecha.
 - `POST /mantenimiento` — crear ticket.
 - `PATCH /mantenimiento/:id` — cambiar estado/prioridad/cierre.
+- `GET /mantenimiento/:id`
+- `GET /mantenimiento/catalogo/estados` — catálogo de estados.
+- `GET /mantenimiento/catalogo/prioridades` — catálogo de prioridades.
 
 #### Reportes (vistas)
-- `GET /reportes/cxc` — `v_resumen_cxc`
-- `GET /reportes/rentabilidad` — `v_rentabilidad_propiedad`
-- `GET /reportes/ocupacion` — `v_ocupacion`
-- `GET /reportes/descargar?tipo=pdf|xlsx&reporte=...` — exporta.
+- `GET /reportes/cxc` — `v_resumen_cxc` (cuentas por cobrar)
+- `GET /reportes/rentabilidad` — `v_rentabilidad_propiedad` (rentabilidad por propiedad)
+- `GET /reportes/ocupacion` — `v_ocupacion` (estado de ocupación)
+- `GET /reportes/auditoria` — eventos de auditoría con filtros
+- `GET /reportes/descargar?tipo=pdf|xlsx&reporte=...&desde&hasta` — exporta.
+- `GET /reportes/kpis` — indicadores clave para dashboard.
 
 ### 1.8 Validaciones críticas
 - **Contratos**: propiedad `DISPONIBLE`; `fecha_inicio <= fecha_fin`; no permitir múltiples `ACTIVO` simultáneos por propiedad.
@@ -256,10 +328,11 @@ frontend/
 - **Propiedades**: tabla con filtros (estado, tipo), CRUD, gestión de imágenes.
 - **Inquilinos**: tabla + CRUD + búsqueda por nombre/doc.
 - **Contratos**: wizard (selección propiedad DISPO + inquilino + fechas + renta + depósito), acciones de **Renovar/Finalizar**.
+- **Facturas**: visualización por contrato, generación mensual, anulación (ADMIN).
 - **Pagos**: registrar pago, ver historial, aplicar a facturas abiertas; mostrar `saldo_no_aplicado` y detalle de aplicaciones.
 - **Gastos**: registrar/categorizar por propiedad; filtros por fecha/tipo.
-- **Reportes**: vistas sobre `cxc`, `rentabilidad`, `ocupación`; exportar PDF/Excel.
 - **Mantenimiento**: tickets, estados, prioridades.
+- **Reportes**: vistas sobre `cxc`, `rentabilidad`, `ocupación`, `auditoría`; exportar PDF/Excel.
 - **Usuarios** (ADMIN): CRUD, asignación de roles, activar/desactivar.
 
 ### 2.5 UX/UI — patrones
@@ -299,10 +372,11 @@ frontend/
 | Usuarios/Roles        | CRUD                             |  ✅   |  ⛔  |
 | Propiedades           | CRUD, imágenes                   |  ✅   |  ✅  |
 | Inquilinos            | CRUD                             |  ✅   |  ✅  |
-| Contratos             | Crear/Renovar/Finalizar          |  ✅   |  ✅  |
+| Contratos             | Crear/Renovar/Finalizar/Eliminar |  ✅   |  ✅  |
 | Facturas              | Generar (SP) / Ver               |  ✅   |  ✅  |
 | Facturas              | Anular                           |  ✅   |  ⛔  |
-| Pagos                 | Registrar/Aplicar/Revertir       |  ✅   |  ✅  |
+| Pagos                 | CRUD                             |  ✅   |  ✅  |
+| Aplicaciones de Pago  | Aplicar/Revertir                 |  ✅   |  ✅  |
 | Gastos                | CRUD                             |  ✅   |  ✅  |
 | Mantenimiento         | CRUD estado/prioridad            |  ✅   |  ✅  |
 | Reportes              | Ver/Exportar                     |  ✅   |  ✅  |

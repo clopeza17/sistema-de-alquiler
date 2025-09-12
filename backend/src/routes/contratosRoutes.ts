@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { 
   getContratos,
-  getContrato,
+  getContratoById,
   createContrato,
   updateContrato,
   deleteContrato,
@@ -32,7 +32,7 @@ router.get('/',
  */
 router.get('/:id', 
   requireRoles('ADMIN', 'AGENTE'),
-  getContrato
+  getContratoById
 );
 
 /**

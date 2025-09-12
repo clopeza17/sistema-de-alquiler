@@ -28,7 +28,7 @@ const paginationSchema = z.object({
 const paramsIdSchema = z.object({
     id: z.string().transform(val => parseInt(val)).pipe(z.number().int().positive('ID debe ser un número positivo'))
 });
-export const getContratos = asyncHandler(async (req, res) => {
+export const getContratos = async (_req, res) => {
     try {
         const { page, limit } = paginationSchema.parse(req.query);
         const offset = (page - 1) * limit;
@@ -101,7 +101,7 @@ export const getContratos = asyncHandler(async (req, res) => {
         logger.error('Error al listar contratos', { error });
         throw error;
     }
-});
+};
 export const getContratoById = asyncHandler(async (req, res) => {
     try {
         const { id } = paramsIdSchema.parse(req.params);
@@ -453,4 +453,4 @@ export const deleteContrato = asyncHandler(async (req, res) => {
         connection.release();
     }
 });
-//# sourceMappingURL=contratosController.js.map
+//# sourceMappingURL=contratosController_backup.js.map
