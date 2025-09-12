@@ -179,3 +179,104 @@ export const inquilinosApi = {
     await api.delete(`/inquilinos/${id}`)
   },
 }
+
+// ===== Propiedades =====
+export interface PropiedadItem {
+  id: number
+  codigo: string
+  tipo: 'APARTAMENTO' | 'CASA' | 'ESTUDIO' | 'OTRO'
+  titulo: string
+  direccion: string
+  renta_mensual: number
+  estado?: string
+}
+
+export interface PropiedadesListResponse {
+  items: PropiedadItem[]
+  total: number
+  page: number
+  limit: number
+}
+
+export const propiedadesApi = {
+  list: async (params?: { page?: number; limit?: number; search?: string }): Promise<PropiedadesListResponse> => {
+    const response = await api.get('/propiedades', { params })
+    const data = response.data?.data
+    return {
+      items: (data?.items || []) as PropiedadItem[],
+      total: data?.total || 0,
+      page: data?.page || params?.page || 1,
+      limit: data?.limit || params?.limit || 10,
+    }
+  },
+  create: async (payload: { codigo: string; tipo: string; titulo: string; direccion: string; renta_mensual: number; area_m2?: number; deposito?: number }): Promise<void> => {
+    await api.post('/propiedades', payload)
+  },
+  update: async (id: number, payload: Partial<{ codigo: string; tipo: string; titulo: string; direccion: string; renta_mensual: number; area_m2: number; deposito: number; notas: string }>): Promise<void> => {
+    await api.put(`/propiedades/${id}`, payload)
+  },
+  changeStatus: async (id: number, estado: string): Promise<void> => {
+    await api.patch(`/propiedades/${id}/estado`, { estado })
+  },
+  remove: async (id: number): Promise<void> => {
+    await api.delete(`/propiedades/${id}`)
+  },
+}
+
+// ===== Contratos =====
+export type ContratoEstado = 'ACTIVO' | 'FINALIZADO' | 'RESCINDIDO'
+
+export interface ContratoItem {
+  id: number
+  propiedad_id: number
+  inquilino_id: number
+  monto_mensual: number
+  fecha_inicio: string
+  fecha_fin: string
+  deposito?: number
+  condiciones_especiales?: string
+  estado: ContratoEstado
+  propiedad_direccion?: string
+  inquilino_nombre?: string
+}
+
+export interface ContratosListResponse {
+  items: ContratoItem[]
+  total: number
+  page: number
+  limit: number
+}
+
+export const contratosApi = {
+  list: async (params?: { page?: number; limit?: number; estado?: string; propiedad_id?: number; inquilino_id?: number; fecha_desde?: string; fecha_hasta?: string }): Promise<ContratosListResponse> => {
+    const response = await api.get('/contratos', { params })
+    const data = response.data
+    // backend responde { data: [...], pagination: {...} }
+    return {
+      items: (data?.data || []) as ContratoItem[],
+      total: data?.pagination?.total || 0,
+      page: data?.pagination?.page || params?.page || 1,
+      limit: data?.pagination?.limit || params?.limit || 10,
+    }
+  },
+  create: async (payload: { propiedad_id: number; inquilino_id: number; monto_mensual: number; fecha_inicio: string; fecha_fin: string; deposito?: number; condiciones_especiales?: string }): Promise<void> => {
+    await api.post('/contratos', payload)
+  },
+  update: async (id: number, payload: Partial<{ monto_mensual: number; fecha_fin: string; deposito: number; condiciones_especiales: string }>): Promise<void> => {
+    await api.put(`/contratos/${id}`, payload)
+  },
+  finalizar: async (id: number, payload: { fecha_finalizacion: string; motivo?: string }): Promise<void> => {
+    await api.put(`/contratos/${id}/finalizar`, payload)
+  },
+  renovar: async (id: number, payload: { nueva_fecha_fin: string; nuevo_monto?: number }): Promise<void> => {
+    await api.put(`/contratos/${id}/renovar`, payload)
+  },
+  remove: async (id: number): Promise<void> => {
+    await api.delete(`/contratos/${id}`)
+  },
+  facturas: async (id: number): Promise<any[]> => {
+    const response = await api.get(`/contratos/${id}/facturas`)
+    // Espera respuesta { data: [...] }
+    return response.data?.data || []
+  },
+}

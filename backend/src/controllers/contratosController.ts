@@ -52,12 +52,11 @@ interface ContratoRow extends RowDataPacket {
   id: number;
   propiedad_id: number;
   inquilino_id: number;
-  monto_mensual: number;
+  renta_mensual: number;
   fecha_inicio: Date;
   fecha_fin: Date;
   deposito: number | null;
-  condiciones_especiales: string | null;
-  estado: 'ACTIVO' | 'FINALIZADO' | 'RESCINDIDO';
+  estado: 'ACTIVO' | 'FINALIZADO' | 'CANCELADO' | 'PENDIENTE';
   creado_el: Date;
   actualizado_el: Date;
   // Datos adicionales de joins
@@ -83,8 +82,9 @@ export const getContratos = asyncHandler(async (req: Request, res: Response) => 
     
     // Filtros opcionales
     if (estado) {
+      const estadoDb = String(estado).toUpperCase() === 'RESCINDIDO' ? 'CANCELADO' : estado;
       conditions.push('c.estado = ?');
-      params.push(estado);
+      params.push(estadoDb);
     }
     
     if (propiedad_id) {
@@ -121,8 +121,8 @@ export const getContratos = asyncHandler(async (req: Request, res: Response) => 
     // Obtener contratos con datos relacionados
     const [contratos] = await pool.execute(`
       SELECT 
-        c.id, c.propiedad_id, c.inquilino_id, c.monto_mensual,
-        c.fecha_inicio, c.fecha_fin, c.deposito, c.condiciones_especiales,
+        c.id, c.propiedad_id, c.inquilino_id, c.renta_mensual AS monto_mensual,
+        c.fecha_inicio, c.fecha_fin, c.deposito,
         c.estado, c.creado_el, c.actualizado_el,
         p.direccion as propiedad_direccion,
         i.nombre_completo as inquilino_nombre
@@ -131,8 +131,8 @@ export const getContratos = asyncHandler(async (req: Request, res: Response) => 
       LEFT JOIN inquilinos i ON c.inquilino_id = i.id
       ${whereClause}
       ORDER BY c.creado_el DESC
-      LIMIT ? OFFSET ?
-    `, [...params, limit, offset]);
+      LIMIT ${limit} OFFSET ${offset}
+    `, params);
     
     await auditAction(req, 'READ', 'contratos', null, { 
       filters: req.query,
@@ -173,8 +173,8 @@ export const getContratoById = asyncHandler(async (req: Request, res: Response) 
     
     const [rows] = await pool.execute(`
       SELECT 
-        c.id, c.propiedad_id, c.inquilino_id, c.monto_mensual,
-        c.fecha_inicio, c.fecha_fin, c.deposito, c.condiciones_especiales,
+        c.id, c.propiedad_id, c.inquilino_id, c.renta_mensual AS monto_mensual,
+        c.fecha_inicio, c.fecha_fin, c.deposito,
         c.estado, c.creado_el, c.actualizado_el,
         p.direccion as propiedad_direccion, p.tipo as propiedad_tipo,
         i.nombre_completo as inquilino_nombre, i.telefono as inquilino_telefono,
@@ -268,17 +268,17 @@ export const createContrato = asyncHandler(async (req: Request, res: Response) =
     // Crear el contrato
     const [result] = await connection.execute(`
       INSERT INTO contratos (
-        propiedad_id, inquilino_id, monto_mensual, fecha_inicio, fecha_fin,
-        deposito, condiciones_especiales, estado
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, 'ACTIVO')
+        propiedad_id, inquilino_id, fecha_inicio, fecha_fin,
+        renta_mensual, deposito, estado, creado_por, creado_el
+      ) VALUES (?, ?, ?, ?, ?, ?, 'ACTIVO', ?, NOW())
     `, [
       contratoData.propiedad_id,
       contratoData.inquilino_id,
-      contratoData.monto_mensual,
       contratoData.fecha_inicio,
       contratoData.fecha_fin,
+      contratoData.monto_mensual,
       contratoData.deposito || 0,
-      contratoData.condiciones_especiales || null
+      req.user?.userId || 0
     ]);
     
     const contratoId = (result as ResultSetHeader).insertId;
@@ -357,7 +357,7 @@ export const updateContrato = asyncHandler(async (req: Request, res: Response) =
     const updateParams: any[] = [];
     
     if (updateData.monto_mensual !== undefined) {
-      updateFields.push('monto_mensual = ?');
+      updateFields.push('renta_mensual = ?');
       updateParams.push(updateData.monto_mensual);
     }
     
@@ -371,10 +371,7 @@ export const updateContrato = asyncHandler(async (req: Request, res: Response) =
       updateParams.push(updateData.deposito);
     }
     
-    if (updateData.condiciones_especiales !== undefined) {
-      updateFields.push('condiciones_especiales = ?');
-      updateParams.push(updateData.condiciones_especiales);
-    }
+    // condiciones_especiales eliminado del esquema actual
     
     if (updateFields.length === 0) {
       throw new BadRequestError('No se proporcionaron campos para actualizar');
@@ -534,7 +531,7 @@ export const renovarContrato = asyncHandler(async (req: Request, res: Response) 
     const updateParams = [nueva_fecha_fin];
     
     if (nuevo_monto !== undefined) {
-      updateFields.push('monto_mensual = ?');
+      updateFields.push('renta_mensual = ?');
       updateParams.push(nuevo_monto);
     }
     
