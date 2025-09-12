@@ -1,9 +1,161 @@
+import { useEffect, useMemo, useState } from 'react'
+import { toast } from 'sonner'
+import { inquilinosApi, InquilinoItem } from '../../api/endpoints'
+
 export default function Inquilinos() {
+  const [loading, setLoading] = useState(false)
+  const [items, setItems] = useState<InquilinoItem[]>([])
+  const [total, setTotal] = useState(0)
+  const [page, setPage] = useState(1)
+  const [limit, setLimit] = useState(10)
+  const [search, setSearch] = useState('')
+  const [openMenuId, setOpenMenuId] = useState<number | null>(null)
+
+  const [form, setForm] = useState({ nombre_completo: '', correo: '', telefono: '', direccion: '' })
+
+  const canSubmit = useMemo(() => form.nombre_completo.trim().length >= 2, [form])
+
+  const load = async () => {
+    setLoading(true)
+    try {
+      const data = await inquilinosApi.list({ page, limit, search: search || undefined })
+      setItems(data.items)
+      setTotal(data.total)
+    } catch (e: any) {
+      toast.error(e?.response?.data?.error?.message || e.message || 'Error al cargar inquilinos')
+    } finally { setLoading(false) }
+  }
+
+  useEffect(() => { load() }, [page, limit, search])
+
+  const create = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!canSubmit) return
+    setLoading(true)
+    try {
+      await inquilinosApi.create(form)
+      toast.success('Inquilino creado')
+      setForm({ nombre_completo: '', correo: '', telefono: '', direccion: '' })
+      await load()
+    } catch (e: any) { toast.error(e?.response?.data?.error?.message || e.message || 'No se pudo crear') } finally { setLoading(false) }
+  }
+
+  const changeEstado = async (inq: InquilinoItem, activo: boolean) => {
+    try {
+      await inquilinosApi.changeStatus(inq.id, activo)
+      toast.success('Estado actualizado')
+      await load()
+    } catch (e: any) { toast.error(e?.response?.data?.error?.message || e.message || 'No se pudo actualizar estado') }
+  }
+
+  const removeInquilino = async (inq: InquilinoItem) => {
+    if (!confirm(`¿Eliminar inquilino ${inq.nombre_completo}?`)) return
+    try {
+      await inquilinosApi.remove(inq.id)
+      toast.success('Inquilino eliminado')
+      await load()
+    } catch (e: any) {
+      toast.error(e?.response?.data?.error?.message || e.message || 'No se pudo eliminar')
+    }
+  }
+
   return (
-    <div className="space-y-2">
-      <h1 className="text-2xl font-bold text-gray-900">Inquilinos</h1>
-      <p className="text-gray-600">Vista en construcción. Aquí irá la gestión de inquilinos.</p>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Inquilinos</h1>
+        <p className="text-gray-600 dark:text-gray-300">Gestiona inquilinos del sistema</p>
+      </div>
+
+      <form onSubmit={create} className="bg-white dark:bg-gray-800 dark:border-gray-700 p-4 rounded border space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="label">Nombre completo</label>
+            <input className="input" value={form.nombre_completo} onChange={e => setForm(f => ({ ...f, nombre_completo: e.target.value }))} />
+          </div>
+          <div>
+            <label className="label">Correo (opcional)</label>
+            <input className="input" type="email" value={form.correo} onChange={e => setForm(f => ({ ...f, correo: e.target.value }))} />
+          </div>
+          <div>
+            <label className="label">Teléfono (opcional)</label>
+            <input className="input" value={form.telefono} onChange={e => setForm(f => ({ ...f, telefono: e.target.value }))} />
+          </div>
+          <div>
+            <label className="label">Dirección (opcional)</label>
+            <input className="input" value={form.direccion} onChange={e => setForm(f => ({ ...f, direccion: e.target.value }))} />
+          </div>
+        </div>
+        <div>
+          <button className="btn-primary" type="submit" disabled={!canSubmit || loading}>{loading ? 'Guardando...' : 'Crear inquilino'}</button>
+        </div>
+      </form>
+
+      <div className="bg-white dark:bg-gray-800 dark:border-gray-700 rounded border">
+        <div className="p-4 flex gap-3 items-end">
+          <div>
+            <label className="label">Buscar</label>
+            <input className="input" placeholder="Nombre o correo" value={search} onChange={e => setSearch(e.target.value)} />
+          </div>
+          <div>
+            <label className="label">Tamaño página</label>
+            <select className="input" value={limit} onChange={e => setLimit(parseInt(e.target.value))}>
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+            </select>
+          </div>
+          <div>
+            <button className="btn-secondary" onClick={() => { setPage(1); load() }} type="button">Aplicar</button>
+          </div>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-900">
+              <tr>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Nombre</th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Correo</th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Teléfono</th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Estado</th>
+                <th className="px-4 py-2 text-right">Acciones</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              {items.map(i => (
+                <tr key={i.id}>
+                  <td className="px-4 py-2 text-sm text-gray-900 dark:text-gray-100">{i.nombre_completo}</td>
+                  <td className="px-4 py-2 text-sm text-gray-700 dark:text-gray-200">{i.correo || '—'}</td>
+                  <td className="px-4 py-2 text-sm text-gray-700 dark:text-gray-200">{i.telefono || '—'}</td>
+                  <td className="px-4 py-2 text-sm">
+                    <span className={`mr-2 inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${i.activo ? 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200' : 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200'}`}>{i.activo ? 'ACTIVO' : 'INACTIVO'}</span>
+                  </td>
+                  <td className="px-4 py-2 text-right relative">
+                    <button className="btn-secondary" onClick={() => setOpenMenuId(openMenuId === i.id ? null : i.id)} aria-haspopup="menu" aria-expanded={openMenuId === i.id}>⋮</button>
+                    {openMenuId === i.id && (
+                      <div className="absolute right-2 mt-2 w-56 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow z-10 text-left">
+                        <button className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700" onClick={() => { setOpenMenuId(null); /* TODO: abrir modal editar inquilino */ }}>Editar</button>
+                        {!i.activo ? (
+                          <button className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700" onClick={() => { setOpenMenuId(null); changeEstado(i, true) }}>Activar</button>
+                        ) : (
+                          <button className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700" onClick={() => { setOpenMenuId(null); changeEstado(i, false) }}>Desactivar</button>
+                        )}
+                        <button className="w-full text-left px-4 py-2 hover:bg-red-50 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400" onClick={() => { setOpenMenuId(null); removeInquilino(i) }}>Eliminar</button>
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="px-4 py-2 text-sm text-gray-600 dark:text-gray-300 flex items-center justify-between">
+          <div>Total: {total}</div>
+          <div className="space-x-2">
+            <button className="btn-secondary" disabled={page <= 1} onClick={() => setPage(p => Math.max(1, p - 1))}>Anterior</button>
+            <span>Página {page}</span>
+            <button className="btn-secondary" disabled={items.length < limit} onClick={() => setPage(p => p + 1)}>Siguiente</button>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
-

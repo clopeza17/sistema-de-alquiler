@@ -136,3 +136,46 @@ export const usuariosApi = {
     return roles
   },
 }
+
+// ===== Inquilinos =====
+export interface InquilinoItem {
+  id: number
+  doc_identidad?: string
+  nombre_completo: string
+  correo?: string
+  telefono?: string
+  direccion?: string
+  activo: boolean
+}
+
+export interface InquilinosListResponse {
+  items: InquilinoItem[]
+  total: number
+  page: number
+  limit: number
+}
+
+export const inquilinosApi = {
+  list: async (params?: { page?: number; limit?: number; search?: string }): Promise<InquilinosListResponse> => {
+    const response = await api.get('/inquilinos', { params })
+    const data = response.data?.data
+    return {
+      items: (data?.items || []) as InquilinoItem[],
+      total: data?.total || 0,
+      page: data?.page || params?.page || 1,
+      limit: data?.limit || params?.limit || 10,
+    }
+  },
+  create: async (payload: { nombre_completo: string; correo?: string; telefono?: string; direccion?: string; doc_identidad?: string }): Promise<void> => {
+    await api.post('/inquilinos', payload)
+  },
+  update: async (id: number, payload: Partial<{ nombre_completo: string; correo: string; telefono: string; direccion: string; doc_identidad: string }>): Promise<void> => {
+    await api.put(`/inquilinos/${id}`, payload)
+  },
+  changeStatus: async (id: number, activo: boolean): Promise<void> => {
+    await api.patch(`/inquilinos/${id}/estado`, { activo })
+  },
+  remove: async (id: number): Promise<void> => {
+    await api.delete(`/inquilinos/${id}`)
+  },
+}

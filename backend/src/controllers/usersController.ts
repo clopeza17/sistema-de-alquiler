@@ -60,6 +60,7 @@ const createUserSchema = z.object({
 
 const updateUserSchema = z.object({
   email: emailSchema.optional(),
+  password: passwordSchema.optional(),
   nombres: nameSchema.optional(),
   apellidos: nameSchema.optional(),
   telefono: phoneSchema.optional(),
@@ -392,6 +393,13 @@ export const updateUser = asyncHandler(async (req: Request, res: Response) => {
       updateValues.push(nombreCompleto);
     }
     
+    // Cambio de contraseña (opcional)
+    if (userData.password) {
+      const hashed = await hashPassword(userData.password)
+      updateFields.push('contrasena_hash = ?')
+      updateValues.push(hashed)
+    }
+
     if (updateFields.length > 0) {
       updateFields.push('actualizado_el = NOW()');
       updateValues.push(userId);

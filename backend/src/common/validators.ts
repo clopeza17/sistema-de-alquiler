@@ -27,8 +27,13 @@ export const nameSchema = z.string()
   .regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, 'Nombre solo puede contener letras y espacios');
 
 // Validador para teléfonos de Guatemala (8 dígitos)
+// Teléfono de Guatemala: permitir formatos con espacios/guiones, validar 8 dígitos tras limpiar
 export const phoneSchema = z.string()
-  .regex(/^[0-9]{8}$/, 'Teléfono debe tener exactamente 8 dígitos')
+  .refine((val) => {
+    if (val === undefined || val === null) return true as any
+    const digits = String(val).replace(/\D/g, '')
+    return digits.length === 8 || digits.length === 0
+  }, 'Teléfono debe tener exactamente 8 dígitos')
   .optional();
 
 // Validador para DPI guatemalteco (13 dígitos + 1 dígito verificador)
