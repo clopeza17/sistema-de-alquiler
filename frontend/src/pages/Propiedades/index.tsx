@@ -15,6 +15,7 @@ export default function Propiedades() {
   const [editOpen, setEditOpen] = useState(false)
   const [editTarget, setEditTarget] = useState<PropiedadItem | null>(null)
   const [editForm, setEditForm] = useState<Partial<PropiedadItem> & { area_m2?: number; deposito?: number; notas?: string; estado?: string }>({})
+  const [createOpen, setCreateOpen] = useState(false)
 
   const canSubmit = useMemo(() => form.codigo && form.titulo && form.direccion && Number(form.renta_mensual) > 0, [form])
 
@@ -48,38 +49,9 @@ export default function Propiedades() {
         <p className="text-gray-600 dark:text-gray-300">Listado y alta básica (API en progreso).</p>
       </div>
 
-      <form onSubmit={create} className="bg-white dark:bg-gray-800 dark:border-gray-700 p-4 rounded border space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="label">Código</label>
-            <input className="input" value={form.codigo} onChange={e => setForm(f => ({ ...f, codigo: e.target.value }))} />
-          </div>
-          <div>
-            <label className="label">Tipo</label>
-            <select className="input" value={form.tipo} onChange={e => setForm(f => ({ ...f, tipo: e.target.value as any }))}>
-              <option>APARTAMENTO</option>
-              <option>CASA</option>
-              <option>ESTUDIO</option>
-              <option>OTRO</option>
-            </select>
-          </div>
-          <div>
-            <label className="label">Título</label>
-            <input className="input" value={form.titulo} onChange={e => setForm(f => ({ ...f, titulo: e.target.value }))} />
-          </div>
-          <div>
-            <label className="label">Dirección</label>
-            <input className="input" value={form.direccion} onChange={e => setForm(f => ({ ...f, direccion: e.target.value }))} />
-          </div>
-          <div>
-            <label className="label">Renta mensual (GTQ)</label>
-            <input className="input" type="number" min={0} step={0.01} value={form.renta_mensual as any} onChange={e => setForm(f => ({ ...f, renta_mensual: Number(e.target.value) }))} />
-          </div>
-        </div>
-        <div>
-          <button className="btn-primary" type="submit" disabled={!canSubmit || loading}>{loading ? 'Guardando...' : 'Crear propiedad'}</button>
-        </div>
-      </form>
+      <div className="flex justify-end">
+        <button className="btn-primary" onClick={() => setCreateOpen(true)}>Nueva propiedad</button>
+      </div>
 
       <div className="bg-white dark:bg-gray-800 dark:border-gray-700 rounded border">
         <div className="p-4 flex gap-3 items-end">
@@ -142,6 +114,52 @@ export default function Propiedades() {
           </div>
         </div>
       </div>
+
+      {/* Modal crear propiedad */}
+      {createOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setCreateOpen(false)} />
+          <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-3xl mx-4 border border-gray-200 dark:border-gray-700">
+            <div className="border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Nueva propiedad</h2>
+              <button className="btn-secondary" onClick={() => setCreateOpen(false)}>Cerrar</button>
+            </div>
+            <form className="p-4 space-y-4" onSubmit={create}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="label">Código</label>
+                  <input className="input" value={form.codigo} onChange={e => setForm(f => ({ ...f, codigo: e.target.value }))} />
+                </div>
+                <div>
+                  <label className="label">Tipo</label>
+                  <select className="input" value={form.tipo} onChange={e => setForm(f => ({ ...f, tipo: e.target.value as any }))}>
+                    <option>APARTAMENTO</option>
+                    <option>CASA</option>
+                    <option>ESTUDIO</option>
+                    <option>OTRO</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="label">Título</label>
+                  <input className="input" value={form.titulo} onChange={e => setForm(f => ({ ...f, titulo: e.target.value }))} />
+                </div>
+                <div>
+                  <label className="label">Dirección</label>
+                  <input className="input" value={form.direccion} onChange={e => setForm(f => ({ ...f, direccion: e.target.value }))} />
+                </div>
+                <div>
+                  <label className="label">Renta mensual (GTQ)</label>
+                  <input className="input" type="number" min={0} step={0.01} value={form.renta_mensual as any} onChange={e => setForm(f => ({ ...f, renta_mensual: Number(e.target.value) }))} />
+                </div>
+              </div>
+              <div className="flex justify-end gap-2">
+                <button type="button" className="btn-secondary" onClick={() => setCreateOpen(false)}>Cancelar</button>
+                <button className="btn-primary" type="submit" disabled={!canSubmit || loading}>{loading ? 'Guardando...' : 'Crear'}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
       {editOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/40" onClick={() => setEditOpen(false)} />

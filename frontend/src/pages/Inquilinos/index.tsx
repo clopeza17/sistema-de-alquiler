@@ -10,6 +10,7 @@ export default function Inquilinos() {
   const [limit, setLimit] = useState(10)
   const [search, setSearch] = useState('')
   const [openMenuId, setOpenMenuId] = useState<number | null>(null)
+  const [createOpen, setCreateOpen] = useState(false)
   const [editOpen, setEditOpen] = useState(false)
   const [editTarget, setEditTarget] = useState<InquilinoItem | null>(null)
   const [editForm, setEditForm] = useState<{ doc_identidad?: string; nombre_completo?: string; telefono?: string; correo?: string; direccion?: string; activo?: boolean }>({})
@@ -69,29 +70,9 @@ export default function Inquilinos() {
         <p className="text-gray-600 dark:text-gray-300">Gestiona inquilinos del sistema</p>
       </div>
 
-      <form onSubmit={create} className="bg-white dark:bg-gray-800 dark:border-gray-700 p-4 rounded border space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="label">Nombre completo</label>
-            <input className="input" value={form.nombre_completo} onChange={e => setForm(f => ({ ...f, nombre_completo: e.target.value }))} />
-          </div>
-          <div>
-            <label className="label">Correo (opcional)</label>
-            <input className="input" type="email" value={form.correo} onChange={e => setForm(f => ({ ...f, correo: e.target.value }))} />
-          </div>
-          <div>
-            <label className="label">Teléfono (opcional)</label>
-            <input className="input" value={form.telefono} onChange={e => setForm(f => ({ ...f, telefono: e.target.value }))} />
-          </div>
-          <div>
-            <label className="label">Dirección (opcional)</label>
-            <input className="input" value={form.direccion} onChange={e => setForm(f => ({ ...f, direccion: e.target.value }))} />
-          </div>
-        </div>
-        <div>
-          <button className="btn-primary" type="submit" disabled={!canSubmit || loading}>{loading ? 'Guardando...' : 'Crear inquilino'}</button>
-        </div>
-      </form>
+      <div className="flex justify-end">
+        <button className="btn-primary" onClick={() => setCreateOpen(true)}>Nuevo inquilino</button>
+      </div>
 
       <div className="bg-white dark:bg-gray-800 dark:border-gray-700 rounded border">
         <div className="p-4 flex gap-3 items-end">
@@ -159,6 +140,43 @@ export default function Inquilinos() {
           </div>
         </div>
       </div>
+
+      {/* Modal crear inquilino */}
+      {createOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setCreateOpen(false)} />
+          <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl mx-4 border border-gray-200 dark:border-gray-700">
+            <div className="border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Nuevo inquilino</h2>
+              <button className="btn-secondary" onClick={() => setCreateOpen(false)}>Cerrar</button>
+            </div>
+            <form className="p-4 space-y-4" onSubmit={create}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="label">Nombre completo</label>
+                  <input className="input" value={form.nombre_completo} onChange={e => setForm(f => ({ ...f, nombre_completo: e.target.value }))} />
+                </div>
+                <div>
+                  <label className="label">Correo (opcional)</label>
+                  <input className="input" type="email" value={form.correo} onChange={e => setForm(f => ({ ...f, correo: e.target.value }))} />
+                </div>
+                <div>
+                  <label className="label">Teléfono (opcional)</label>
+                  <input className="input" value={form.telefono} onChange={e => setForm(f => ({ ...f, telefono: e.target.value }))} />
+                </div>
+                <div>
+                  <label className="label">Dirección (opcional)</label>
+                  <input className="input" value={form.direccion} onChange={e => setForm(f => ({ ...f, direccion: e.target.value }))} />
+                </div>
+              </div>
+              <div className="flex justify-end gap-2">
+                <button type="button" className="btn-secondary" onClick={() => setCreateOpen(false)}>Cancelar</button>
+                <button className="btn-primary" type="submit" disabled={!canSubmit || loading}>{loading ? 'Guardando...' : 'Crear'}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {editOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">

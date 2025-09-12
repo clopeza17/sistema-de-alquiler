@@ -29,6 +29,7 @@ export default function Usuarios() {
   const [editPwdVisible, setEditPwdVisible] = useState(false)
   const { user } = useAuthStore()
   const [openMenuId, setOpenMenuId] = useState<number | null>(null)
+  const [createOpen, setCreateOpen] = useState(false)
 
   const load = async () => {
     setLoading(true)
@@ -137,50 +138,9 @@ export default function Usuarios() {
         <p className="text-gray-600 dark:text-gray-300">Administra usuarios y roles</p>
       </div>
 
-      {/* Formulario de creación */}
-      <form onSubmit={onSubmit} className="bg-white dark:bg-gray-800 dark:border-gray-700 p-4 rounded border space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="label">Email</label>
-            <input className="input" type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
-          </div>
-          <div>
-            <label className="label">Contraseña</label>
-            <input className="input" type="password" value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))} />
-            {!isStrongPassword(form.password) && form.password && (
-              <p className="text-xs text-gray-500 mt-1">Debe tener 8+ caracteres, 1 mayúscula, 1 minúscula y 1 número.</p>
-            )}
-          </div>
-          <div>
-            <label className="label">Nombres</label>
-            <input className="input" value={form.nombres} onChange={e => setForm(f => ({ ...f, nombres: e.target.value }))} />
-          </div>
-          <div>
-            <label className="label">Apellidos</label>
-            <input className="input" value={form.apellidos} onChange={e => setForm(f => ({ ...f, apellidos: e.target.value }))} />
-          </div>
-          {/* Teléfono removido */}
-          <div>
-            <label className="label">Rol</label>
-            <select
-              className="input"
-              value={form.roleId ?? ''}
-              onChange={e => setForm(f => ({ ...f, roleId: e.target.value ? Number(e.target.value) : null }))}
-            >
-              <option value="">Seleccione un rol</option>
-              {roles.map(r => (
-                <option key={r.id} value={r.id}>{r.nombre}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        <div>
-          <button type="submit" className="btn-primary" disabled={!canSubmit || loading}>
-            {loading ? 'Guardando...' : 'Crear usuario'}
-          </button>
-        </div>
-      </form>
+      <div className="flex justify-end">
+        <button className="btn-primary" onClick={() => setCreateOpen(true)}>Nuevo usuario</button>
+      </div>
 
       {/* Filtros */}
       <div className="bg-white dark:bg-gray-800 dark:border-gray-700 p-4 rounded border flex flex-wrap gap-3 items-end">
@@ -269,6 +229,52 @@ export default function Usuarios() {
           </div>
         </div>
       </div>
+
+      {/* Modal crear usuario */}
+      <Modal open={createOpen} title="Nuevo usuario" onClose={() => setCreateOpen(false)}>
+        <form onSubmit={onSubmit} className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="label">Email</label>
+              <input className="input" type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
+            </div>
+            <div>
+              <label className="label">Contraseña</label>
+              <input className="input" type="password" value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))} />
+              {!isStrongPassword(form.password) && form.password && (
+                <p className="text-xs text-gray-500 mt-1">Debe tener 8+ caracteres, 1 mayúscula, 1 minúscula y 1 número.</p>
+              )}
+            </div>
+            <div>
+              <label className="label">Nombres</label>
+              <input className="input" value={form.nombres} onChange={e => setForm(f => ({ ...f, nombres: e.target.value }))} />
+            </div>
+            <div>
+              <label className="label">Apellidos</label>
+              <input className="input" value={form.apellidos} onChange={e => setForm(f => ({ ...f, apellidos: e.target.value }))} />
+            </div>
+            <div>
+              <label className="label">Rol</label>
+              <select
+                className="input"
+                value={form.roleId ?? ''}
+                onChange={e => setForm(f => ({ ...f, roleId: e.target.value ? Number(e.target.value) : null }))}
+              >
+                <option value="">Seleccione un rol</option>
+                {roles.map(r => (
+                  <option key={r.id} value={r.id}>{r.nombre}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <div className="flex justify-end gap-2">
+            <button type="button" className="btn-secondary" onClick={() => setCreateOpen(false)}>Cancelar</button>
+            <button type="submit" className="btn-primary" disabled={!canSubmit || loading}>
+              {loading ? 'Guardando...' : 'Crear'}
+            </button>
+          </div>
+        </form>
+      </Modal>
 
       {/* Modal de edición */}
       <Modal open={editOpen} title="Editar usuario" onClose={() => setEditOpen(false)}>

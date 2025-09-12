@@ -19,19 +19,20 @@ const logger = createDbLogger();
 /**
  * Esquemas de validación para contratos
  */
+const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/,'Fecha inválida (YYYY-MM-DD)');
 const contratoCreateSchema = z.object({
   propiedad_id: z.number().int().positive('ID de propiedad inválido'),
   inquilino_id: z.number().int().positive('ID de inquilino inválido'),
   monto_mensual: z.number().positive('El monto mensual debe ser positivo'),
-  fecha_inicio: z.string().date('Fecha de inicio inválida'),
-  fecha_fin: z.string().date('Fecha de fin inválida'),
+  fecha_inicio: isoDate,
+  fecha_fin: isoDate,
   deposito: z.number().min(0, 'El depósito no puede ser negativo').optional(),
   condiciones_especiales: z.string().max(1000, 'Las condiciones especiales no pueden exceder 1000 caracteres').optional()
 });
 
 const contratoUpdateSchema = z.object({
   monto_mensual: z.number().positive('El monto mensual debe ser positivo').optional(),
-  fecha_fin: z.string().date('Fecha de fin inválida').optional(),
+  fecha_fin: isoDate.optional(),
   deposito: z.number().min(0, 'El depósito no puede ser negativo').optional(),
   condiciones_especiales: z.string().max(1000, 'Las condiciones especiales no pueden exceder 1000 caracteres').optional()
 });
@@ -68,7 +69,6 @@ interface ContratoRow extends RowDataPacket {
  * GET /api/v1/contratos
  * Obtener lista de contratos con filtros y paginación
  */
-import { Request, Response } from 'express';
 
 export const getContratos = asyncHandler(async (req: Request, res: Response) => {
   try {
