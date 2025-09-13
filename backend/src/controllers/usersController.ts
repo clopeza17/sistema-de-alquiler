@@ -52,19 +52,26 @@ interface UserRoleRow extends RowDataPacket {
 const createUserSchema = z.object({
   email: emailSchema,
   password: passwordSchema,
-  nombres: nameSchema,
-  apellidos: nameSchema,
+  nombre_completo: nameSchema.optional(),
+  nombres: nameSchema.optional(),
+  apellidos: nameSchema.optional(),
   telefono: phoneSchema.optional(),
   roles: z.array(idSchema).min(1, 'Usuario debe tener al menos un rol'),
+}).refine((d) => !!d.nombre_completo || (!!d.nombres && !!d.apellidos), {
+  message: 'Debe proporcionar nombre_completo o nombres y apellidos',
+  path: ['nombre_completo']
 });
 
 const updateUserSchema = z.object({
   email: emailSchema.optional(),
   password: passwordSchema.optional(),
+  nombre_completo: nameSchema.optional(),
   nombres: nameSchema.optional(),
   apellidos: nameSchema.optional(),
   telefono: phoneSchema.optional(),
   roles: z.array(idSchema).min(1, 'Usuario debe tener al menos un rol').optional(),
+}).refine((d) => d.nombre_completo !== undefined || d.nombres !== undefined || d.apellidos !== undefined || d.email !== undefined || d.password !== undefined || d.telefono !== undefined || d.roles !== undefined, {
+  message: 'No hay cambios para actualizar',
 });
 
 const paginationSchema = z.object({
@@ -216,7 +223,7 @@ export const createUser = asyncHandler(async (req: Request, res: Response) => {
   
   try {
     // Crear usuario
-    const nombreCompleto = `${userData.nombres} ${userData.apellidos}`.trim();
+    const nombreCompleto = (userData.nombre_completo ?? `${userData.nombres ?? ''} ${userData.apellidos ?? ''}`.trim());
     const [userResult] = await connection.execute<ResultSetHeader>(
       `INSERT INTO usuarios (correo, contrasena_hash, nombre_completo, activo, creado_el, actualizado_el)
        VALUES (?, ?, ?, 1, NOW(), NOW())`,
@@ -386,9 +393,9 @@ export const updateUser = asyncHandler(async (req: Request, res: Response) => {
       updateFields.push('correo = ?');
       updateValues.push(userData.email);
     }
-    const anyNameChanged = userData.nombres || userData.apellidos;
-    if (anyNameChanged) {
-      const nombreCompleto = `${userData.nombres ?? ''} ${userData.apellidos ?? ''}`.trim() || currentUser.nombre_completo;
+    const nombreCompletoUpdate = userData.nombre_completo ?? ((userData.nombres || userData.apellidos) ? `${userData.nombres ?? ''} ${userData.apellidos ?? ''}`.trim() : undefined);
+    if (nombreCompletoUpdate !== undefined) {
+      const nombreCompleto = nombreCompletoUpdate || currentUser.nombre_completo;
       updateFields.push('nombre_completo = ?');
       updateValues.push(nombreCompleto);
     }

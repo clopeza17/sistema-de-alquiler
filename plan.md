@@ -4,7 +4,7 @@
 - [x] ✅ **Usuarios**: 100% funcional con lógica completa de negocio
 - [x] ✅ **Inquilinos**: 100% funcional con lógica completa de negocio  
 - [x] ✅ **Propiedades**: 100% funcional con lógica completa de negocio
-- [x] ✅ **Contratos**: 100% - Lógica completa de negocio implementada
+- [x] ✅ **Contratos**: 100% - Lógica completa de negocio implementada (fix columnas + LIMIT/OFFSET)
 - [ ] ⏳ **Facturación**: 0% - Pendiente
 - [ ] ⏳ **Pagos**: 0% - Pendiente
 - [ ] ⏳ **Aplicaciones de Pago**: 0% - Pendiente
@@ -16,7 +16,13 @@
 
 > **Stack**: React.js + Node.js/Express + MySQL | **Zona**: Guatemala (-06:00) | **Moneda**: GTQ | **Fechas**: dd/mm/aaaa
 
----### 2.7 Módulos de Negocio - Contratos
+---
+### 2.6 Endpoints y Ajustes Generales
+- [x] ✅ Auth y RBAC activos en rutas sensibles.
+- [x] ✅ Validaciones Zod en controladores (correcciones de fechas ISO en Contratos).
+- [x] ✅ Auditoría: creación/lectura/actualización/eliminación con `auditAction`.
+
+### 2.7 Módulos de Negocio - Contratos
 - [x] ✅ **Contratos Controller**:
   - [x] ✅ `GET /contratos` - Listar con filtros (estado, propiedad, inquilino, periodo)
   - [x] ✅ `POST /contratos` - Crear contrato (validar propiedad DISPONIBLE)
@@ -32,7 +38,12 @@
   - [x] ✅ No múltiples contratos ACTIVO por propiedad
 - [x] ✅ Triggers automáticos (estado propiedad, historial)
 
-### 2.8 Módulos de Negocio - Facturación (CxC)
+### 2.8 Módulos de Negocio - Inquilinos y Propiedades
+- [x] ✅ Inquilinos Controller y Rutas (/api/v1/inquilinos): listar, crear, actualizar, cambiar estado (activar/desactivar), eliminar (soft).
+- [x] ✅ Propiedades Controller y Rutas (/api/v1/propiedades): listar (filtros básicos), crear, actualizar, cambiar estado, eliminar (soft).
+- [x] ✅ Columnas y nombres alineados al esquema en español (correo, nombre_completo, renta_mensual, creado_el, actualizado_el, usuarios_roles, etc.).
+
+### 2.9 Módulos de Negocio - Facturación (CxC)
 - [ ] 📋 **Facturación Controller**:
   - [ ] `POST /facturacion/generar` - Generar facturas mensuales (SP)
   - [ ] `GET /contratos/:id/facturas` - Facturas por contrato
@@ -42,7 +53,7 @@
 - [ ] 📋 Integración con SP `sp_generar_facturas_mensuales`
 - [ ] 📋 Manejo de estados automáticos (ABIERTA, PARCIAL, PAGADA, VENCIDA)
 
-### 2.9 Módulos de Negocio - Pagos
+### 2.10 Módulos de Negocio - Pagos
 - [ ] 📋 **Pagos Controller**:
   - [ ] `POST /pagos` - Registrar pago
   - [ ] `GET /pagos` - Listar con filtros (fecha, contrato, forma)
@@ -52,7 +63,7 @@
 - [ ] 📋 Validaciones: monto > 0, forma_pago_id válido
 - [ ] 📋 Estados: PENDIENTE, APLICADO, ANULADO
 
-### 2.10 Módulos de Negocio - Aplicaciones de Pago
+### 2.11 Módulos de Negocio - Aplicaciones de Pago
 - [ ] 📋 **Aplicaciones Controller**:
   - [ ] `POST /pagos/:id/aplicar` - Aplicar pago a factura
   - [ ] `GET /pagos/:id/aplicaciones` - Listar aplicaciones de un pago
@@ -63,7 +74,7 @@
   - [ ] transacciones con rollback
 - [ ] 📋 Triggers automáticos (saldos, estados)
 
-### 2.11 Módulos de Negocio - Gastos Fijos
+### 2.12 Módulos de Negocio - Gastos Fijos
 - [ ] 📋 **Gastos Controller**:
   - [ ] `GET /gastos` - Listar con filtros (propiedad, tipo, fecha)
   - [ ] `POST /gastos` - Crear gasto
@@ -72,7 +83,7 @@
 - [ ] 📋 Catálogo de tipos de gasto
 - [ ] 📋 Validaciones: monto >= 0, tipo_gasto_id válido
 
-### 2.12 Módulos de Negocio - Mantenimiento
+### 2.13 Módulos de Negocio - Mantenimiento
 - [ ] 📋 **Mantenimiento Controller**:
   - [ ] `GET /mantenimiento` - Listar solicitudes con filtros
   - [ ] `POST /mantenimiento` - Crear ticket
@@ -81,7 +92,7 @@
 - [ ] 📋 Estados: ABIERTA, EN_PROCESO, EN_ESPERA, RESUELTA, CANCELADA
 - [ ] 📋 Prioridades: BAJA, MEDIA, ALTA, CRITICA
 
-### 2.13 Módulos de Reportes
+### 2.14 Módulos de Reportes
 - [ ] 📋 **Reportes Controller**:
   - [ ] `GET /reportes/cxc` - Resumen cuentas por cobrar
   - [ ] `GET /reportes/rentabilidad` - Rentabilidad por propiedad
@@ -91,7 +102,7 @@
 - [ ] 📋 Integración con vistas SQL (v_resumen_cxc, v_rentabilidad_propiedad, v_ocupacion)
 - [ ] 📋 Exportación con exceljs/pdfmake
 
-### 2.14 Testing Backend
+### 2.15 Testing Backend
 - [ ] 📋 Configurar entorno de testing (vitest/jest)
 - [ ] 📋 Tests unitarios - servicios y validadores
 - [ ] 📋 Tests de integración - endpoints con supertest
@@ -146,7 +157,11 @@
 - [ ] 📋 Widgets reutilizables
 - [ ] 📋 Actualización en tiempo real
 
-### 3.6 Gestión de Propiedades
+### 3.6 Gestión de Propiedades (Implementado MVP)
+- [x] ✅ Lista con filtros + paginación.
+- [x] ✅ Modal “Nueva propiedad” y modal “Editar”.
+- [x] ✅ Acciones en menú ⋮ (Editar / Eliminar).
+  - Backend CRUD en `/api/v1/propiedades`.
 - [ ] 📋 **Página Propiedades**:
   - [ ] Lista con filtros (estado, tipo, rango renta)
   - [ ] CRUD completo
@@ -158,7 +173,11 @@
   - [ ] Upload de imágenes
 - [ ] 📋 Búsqueda y filtros avanzados
 
-### 3.7 Gestión de Inquilinos
+### 3.7 Gestión de Inquilinos (Implementado MVP)
+- [x] ✅ Lista con filtros + paginación.
+- [x] ✅ Modal “Nuevo inquilino” con validación Zod (nombre completo, correo, teléfono, dirección).
+- [x] ✅ Modal “Editar inquilino” (todos los campos relevantes) + cambio de estado.
+- [x] ✅ Acciones en menú ⋮ (Editar / Activar / Desactivar / Eliminar).
 - [ ] 📋 **Página Inquilinos**:
   - [ ] Lista con búsqueda por nombre/documento
   - [ ] CRUD completo
@@ -168,7 +187,11 @@
   - [ ] Validaciones de documento único
 - [ ] 📋 Búsqueda en tiempo real
 
-### 3.8 Gestión de Contratos
+### 3.8 Gestión de Contratos (Implementado MVP)
+- [x] ✅ Lista con filtros (estado, propiedad, inquilino, fechas) + paginación.
+- [x] ✅ Modales: “Nuevo contrato”, “Editar”, “Renovar”, “Finalizar”, “Ver facturas”.
+- [x] ✅ Acciones en menú ⋮ (Editar / Renovar / Finalizar / Ver Facturas / Eliminar).
+- [x] ✅ Mapeos de columnas: renta_mensual, estado CANCELADO (desde RESCINDIDO).
 - [ ] 📋 **Página Contratos**:
   - [ ] Lista con filtros avanzados
   - [ ] Vista de detalle completa
@@ -218,7 +241,12 @@
   - [ ] Historial de cambios de estado
   - [ ] Comentarios y seguimiento
 
-### 3.12 Gestión de Usuarios (ADMIN)
+### 3.12 Gestión de Usuarios (ADMIN) (Implementado MVP)
+- [x] ✅ Lista con filtros + paginación.
+- [x] ✅ Modal “Nuevo usuario” con validación Zod (email, contraseña fuerte, nombre completo, rol único).
+- [x] ✅ Modal “Editar usuario” (email, nombre completo, rol, restablecer contraseña).
+- [x] ✅ Acciones en menú ⋮ (Editar / Activar / Desactivar / Restablecer / Eliminar).
+- [x] ✅ Ajuste: frontend usa “Nombre completo” (un solo campo); backend acepta `nombre_completo` o (`nombres`+`apellidos`).
 - [ ] 📋 **Página Usuarios** (solo ADMIN):
   - [ ] Lista de usuarios con roles
   - [ ] CRUD completo
@@ -257,6 +285,19 @@
 - [ ] 📋 Headers de seguridad (Helmet)
 - [ ] 📋 CORS configurado correctamente
 - [ ] 📋 Auditoría completa funcionando
+
+---
+
+## 🧭 Patrones UI y Notas de Implementación
+- Modo oscuro por defecto (`<html class="dark">`) y Tailwind `dark:` aplicado en componentes.
+- Cabecera “Acciones” simplificada: acciones en menú ⋮ (Usuarios, Inquilinos, Propiedades, Contratos).
+- Botón “Nuevo …” en cada módulo abre modal de creación (patrón consistente).
+- Validación visual con Zod + React Hook Form en usuarios e inquilinos (propiedades/contratos se pueden extender igual).
+- Icono/Logo: usar `frontend/public/edifico.png` (Favicon y login). Hard reload para refrescar cache.
+
+## 🛠 Scripts de desarrollo
+- `iniciar-sistema.sh`: levanta MySQL (docker), backend (dev) y frontend (vite), muestra logs en vivo y deja modo seguimiento (Ctrl+C detiene los procesos lanzados por el script).
+- `iniciar-sistema-stop.sh`: detiene procesos iniciados por el script; `STOP_DB=1` para parar MySQL también.
 
 ### 4.2 Testing Integral
 - [ ] 📋 Tests de integración completos

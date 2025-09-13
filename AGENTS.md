@@ -51,6 +51,42 @@
 - Colección Postman/Insomnia o Swagger básico disponible.
 - Scripts `dev`, `build`, `start`, `test` funcionando.
 
+## Notas de Implementación Reciente (Frontend + Backend)
+
+- Estándar UI aplicado en módulos (Usuarios, Inquilinos, Propiedades, Contratos):
+  - Botón “Nuevo …” abre modal de creación (React Hook Form + Zod).
+  - Acciones en tabla agrupadas en menú de tres puntos (⋮): Editar / Activar/Desactivar / Eliminar; en Contratos también Renovar/Finalizar/Ver Facturas.
+  - Modo oscuro por defecto (`<html class="dark">`) y clases `dark:` en componentes.
+  - Icono/Logo: colocar `edifico.png` en `frontend/public/edifico.png` (favicon y login). Realizar hard reload para refrescar cache del navegador.
+
+- Usuarios:
+  - Frontend usa “Nombre completo” en formularios (un único campo). Backend acepta `nombre_completo` o (`nombres` + `apellidos`) y almacena en `usuarios.nombre_completo`.
+  - Restablecimiento de contraseña desde modal de edición (ADMIN o el propio usuario).
+
+- Inquilinos:
+  - CRUD completo con validación Zod (nombre completo obligatorio, correo/teléfono/dirección opcionales).
+  - Cambios de estado (activar/desactivar) desde menú ⋮.
+
+- Propiedades:
+  - CRUD completo (backend `/api/v1/propiedades`) con modal de edición (código, tipo, título, dirección, dormitorios, baños, m², renta, depósito, notas y estado).
+
+- Contratos:
+  - Columnas y nombres alineados a la BD (renta_mensual, estado CANCELADO). Evitar placeholders en LIMIT/OFFSET.
+  - Validaciones de fecha con regex ISO (YYYY-MM-DD) en Zod.
+  - Frontend con lista, filtros (estado/propiedad/inquilino/fechas), modales de Crear/Editar/Renovar/Finalizar y “Ver facturas”.
+
+## Scripts de utilidad
+
+- `iniciar-sistema.sh`: inicia MySQL (docker), backend (dev) y frontend (vite), hace `npm install` si falta y tail de logs; Ctrl+C detiene solo lo lanzado por el script.
+- `iniciar-sistema-stop.sh`: detiene procesos; `STOP_DB=1` para parar contenedor MySQL.
+
+## Convenciones adicionales
+
+- Fechas: UI usa `input type=date`; API recibe `YYYY-MM-DD`.
+- Estado visual: chips pastel (verde ACTIVO / rojo INACTIVO) con variantes dark.
+- Roles: selección única (listbox); al seleccionar un rol se deshabilitan los demás hasta deseleccionar.
+
+
 ## Próximo Módulo: Contratos
 - Endpoints: `GET/POST /contratos`, `GET/PUT /contratos/:id`, `POST /contratos/:id/finalizar`, `POST /contratos/:id/renovar`.
 - Reglas: propiedad en estado `DISPONIBLE`, `fecha_inicio <= fecha_fin`, un solo `ACTIVO` por propiedad.

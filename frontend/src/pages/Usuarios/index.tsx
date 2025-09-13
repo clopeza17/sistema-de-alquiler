@@ -1,4 +1,7 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { z } from 'zod'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { usuariosApi, RolCatalogo, UsuarioItem, UsuarioEstado } from '../../api/endpoints'
 import { toast } from 'sonner'
 import Modal from '../../components/Modal'
@@ -10,13 +13,27 @@ export default function Usuarios() {
   const [total, setTotal] = useState(0)
   const [roles, setRoles] = useState<RolCatalogo[]>([])
 
-  const [form, setForm] = useState({
-    email: '',
-    password: '',
-    nombres: '',
-    apellidos: '',
-    roleId: null as number | null,
+  // Zod schemas
+  const passwordStrong = z.string()
+    .min(8, 'Debe tener al menos 8 caracteres')
+    .regex(/[A-Z]/, 'Debe incluir al menos una mayúscula')
+    .regex(/[a-z]/, 'Debe incluir al menos una minúscula')
+    .regex(/[0-9]/, 'Debe incluir al menos un número')
+
+  const createSchema = z.object({
+    email: z.string().email('Correo inválido'),
+    password: passwordStrong,
+    nombreCompleto: z.string().min(2, 'Ingresa el nombre completo'),
+    roleId: z.preprocess((v) => (v === '' ? undefined : Number(v)), z.number({ invalid_type_error: 'Selecciona un rol' })),
   })
+
+  type CreateForm = z.infer<typeof createSchema>
+
+  const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<CreateForm>({
+    resolver: zodResolver(createSchema),
+    defaultValues: { email: '', password: '', nombreCompleto: '', roleId: undefined as any },
+  })
+  const [createOpen, setCreateOpen] = useState(false)
 
   const [page, setPage] = useState(1)
   const [limit, setLimit] = useState(10)
@@ -25,11 +42,11 @@ export default function Usuarios() {
   const [role, setRole] = useState<string>('')
   const [editOpen, setEditOpen] = useState(false)
   const [editTarget, setEditTarget] = useState<UsuarioItem | null>(null)
-  const [editForm, setEditForm] = useState<{ email?: string; nombres?: string; apellidos?: string; roleId?: number | null; password?: string }>({})
+  const [editForm, setEditForm] = useState<{ email?: string; nombreCompleto?: string; roleId?: number | null; password?: string }>({})
   const [editPwdVisible, setEditPwdVisible] = useState(false)
   const { user } = useAuthStore()
   const [openMenuId, setOpenMenuId] = useState<number | null>(null)
-  const [createOpen, setCreateOpen] = useState(false)
+  // removed duplicate createOpen
 
   const load = async () => {
     setLoading(true)
@@ -53,31 +70,25 @@ export default function Usuarios() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, limit, search, estado, role])
 
-  const isStrongPassword = (pwd: string) => /[A-Z]/.test(pwd) && /[a-z]/.test(pwd) && /[0-9]/.test(pwd) && pwd.length >= 8
-  const canSubmit = useMemo(() => {
-    return form.email && isStrongPassword(form.password) && form.nombres && form.apellidos && form.roleId !== null
-  }, [form])
+  // helper legado eliminado (validación vía zod)
 
-  const onSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!canSubmit) return
+  const onSubmit = async (data: CreateForm) => {
     setLoading(true)
     try {
+      // Enviar nombre_completo directo (backend lo almacena tal cual)
       await usuariosApi.create({
-        email: form.email,
-        password: form.password,
-        nombres: form.nombres,
-        apellidos: form.apellidos,
-        roles: [form.roleId as number],
+        email: data.email,
+        password: data.password,
+        nombre_completo: data.nombreCompleto,
+        roles: [data.roleId as number],
       })
       toast.success('Usuario creado')
-      setForm({ email: '', password: '', nombres: '', apellidos: '', roleId: null })
+      reset()
+      setCreateOpen(false)
       await load()
     } catch (e: any) {
       toast.error(e?.response?.data?.error?.message || 'No se pudo crear el usuario')
-    } finally {
-      setLoading(false)
-    }
+    } finally { setLoading(false) }
   }
 
   // roles: selección única controlada por roleId
@@ -86,7 +97,7 @@ export default function Usuarios() {
     setEditTarget(u)
     // Preseleccionar roles actuales
     const selectedRole = roles.find(r => u.roles.includes(r.nombre))
-    setEditForm({ email: u.email, nombres: u.nombres, apellidos: u.apellidos, roleId: selectedRole ? selectedRole.id : null })
+    setEditForm({ email: u.email, nombreCompleto: `${u.nombres} ${u.apellidos}`.trim(), roleId: selectedRole ? selectedRole.id : null })
     setEditOpen(true)
   }
 
@@ -95,8 +106,7 @@ export default function Usuarios() {
     try {
       await usuariosApi.update(editTarget.id, {
         email: editForm.email,
-        nombres: editForm.nombres,
-        apellidos: editForm.apellidos,
+        nombre_completo: editForm.nombreCompleto,
         roles: editForm.roleId != null ? [editForm.roleId] : undefined,
         ...(editForm.password ? { password: editForm.password } : {}),
       })
@@ -139,7 +149,7 @@ export default function Usuarios() {
       </div>
 
       <div className="flex justify-end">
-        <button className="btn-primary" onClick={() => setCreateOpen(true)}>Nuevo usuario</button>
+        <button className="btn-primary" onClick={() => { reset(); setCreateOpen(true) }}>Nuevo usuario</button>
       </div>
 
       {/* Filtros */}
@@ -232,45 +242,42 @@ export default function Usuarios() {
 
       {/* Modal crear usuario */}
       <Modal open={createOpen} title="Nuevo usuario" onClose={() => setCreateOpen(false)}>
-        <form onSubmit={onSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="label">Email</label>
-              <input className="input" type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
+              <input className="input" type="email" {...register('email')} />
+              {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email.message}</p>}
             </div>
             <div>
               <label className="label">Contraseña</label>
-              <input className="input" type="password" value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))} />
-              {!isStrongPassword(form.password) && form.password && (
+              <input className="input" type="password" {...register('password')} />
+              {errors.password ? (
+                <p className="text-xs text-red-500 mt-1">{errors.password.message}</p>
+              ) : (
                 <p className="text-xs text-gray-500 mt-1">Debe tener 8+ caracteres, 1 mayúscula, 1 minúscula y 1 número.</p>
               )}
             </div>
             <div>
-              <label className="label">Nombres</label>
-              <input className="input" value={form.nombres} onChange={e => setForm(f => ({ ...f, nombres: e.target.value }))} />
-            </div>
-            <div>
-              <label className="label">Apellidos</label>
-              <input className="input" value={form.apellidos} onChange={e => setForm(f => ({ ...f, apellidos: e.target.value }))} />
+              <label className="label">Nombre completo</label>
+              <input className="input" {...register('nombreCompleto')} />
+              {errors.nombreCompleto && <p className="text-xs text-red-500 mt-1">{errors.nombreCompleto.message}</p>}
             </div>
             <div>
               <label className="label">Rol</label>
-              <select
-                className="input"
-                value={form.roleId ?? ''}
-                onChange={e => setForm(f => ({ ...f, roleId: e.target.value ? Number(e.target.value) : null }))}
-              >
+              <select className="input" {...register('roleId')}>
                 <option value="">Seleccione un rol</option>
                 {roles.map(r => (
                   <option key={r.id} value={r.id}>{r.nombre}</option>
                 ))}
               </select>
+              {errors.roleId && <p className="text-xs text-red-500 mt-1">{errors.roleId.message as any}</p>}
             </div>
           </div>
           <div className="flex justify-end gap-2">
             <button type="button" className="btn-secondary" onClick={() => setCreateOpen(false)}>Cancelar</button>
-            <button type="submit" className="btn-primary" disabled={!canSubmit || loading}>
-              {loading ? 'Guardando...' : 'Crear'}
+            <button type="submit" className="btn-primary" disabled={isSubmitting || loading}>
+              {isSubmitting || loading ? 'Guardando...' : 'Crear'}
             </button>
           </div>
         </form>
@@ -284,13 +291,9 @@ export default function Usuarios() {
               <label className="label">Email</label>
               <input className="input" value={editForm.email || ''} onChange={e => setEditForm(f => ({ ...f, email: e.target.value }))} />
             </div>
-            <div>
-              <label className="label">Nombres</label>
-              <input className="input" value={editForm.nombres || ''} onChange={e => setEditForm(f => ({ ...f, nombres: e.target.value }))} />
-            </div>
-            <div>
-              <label className="label">Apellidos</label>
-              <input className="input" value={editForm.apellidos || ''} onChange={e => setEditForm(f => ({ ...f, apellidos: e.target.value }))} />
+            <div className="md:col-span-2">
+              <label className="label">Nombre completo</label>
+              <input className="input" value={editForm.nombreCompleto || ''} onChange={e => setEditForm(f => ({ ...f, nombreCompleto: e.target.value }))} />
             </div>
             {(user && (user.roles.some(r => r.toUpperCase().includes('ADMIN')) || (editTarget && user.id === editTarget.id))) && (
               <div className="md:col-span-2">

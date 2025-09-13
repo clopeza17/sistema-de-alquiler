@@ -1,6 +1,9 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { inquilinosApi, InquilinoItem } from '../../api/endpoints'
+import { useForm } from 'react-hook-form'
+import { z } from 'zod'
+import { zodResolver } from '@hookform/resolvers/zod'
 
 export default function Inquilinos() {
   const [loading, setLoading] = useState(false)
@@ -15,9 +18,17 @@ export default function Inquilinos() {
   const [editTarget, setEditTarget] = useState<InquilinoItem | null>(null)
   const [editForm, setEditForm] = useState<{ doc_identidad?: string; nombre_completo?: string; telefono?: string; correo?: string; direccion?: string; activo?: boolean }>({})
 
-  const [form, setForm] = useState({ nombre_completo: '', correo: '', telefono: '', direccion: '' })
-
-  const canSubmit = useMemo(() => form.nombre_completo.trim().length >= 2, [form])
+  const inqSchema = z.object({
+    nombre_completo: z.string().min(2, 'Ingresa el nombre completo'),
+    correo: z.string().email('Correo inválido').optional().or(z.literal('')),
+    telefono: z.string().regex(/^$|^\d{8}$/,'8 dígitos').optional().or(z.literal('')),
+    direccion: z.string().max(255,'Máximo 255 caracteres').optional().or(z.literal('')),
+  })
+  type InqForm = z.infer<typeof inqSchema>
+  const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<InqForm>({
+    resolver: zodResolver(inqSchema),
+    defaultValues: { nombre_completo: '', correo: '', telefono: '', direccion: '' },
+  })
 
   const load = async () => {
     setLoading(true)
@@ -32,14 +43,13 @@ export default function Inquilinos() {
 
   useEffect(() => { load() }, [page, limit, search])
 
-  const create = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!canSubmit) return
+  const create = async (data: InqForm) => {
     setLoading(true)
     try {
-      await inquilinosApi.create(form)
+      await inquilinosApi.create(data)
       toast.success('Inquilino creado')
-      setForm({ nombre_completo: '', correo: '', telefono: '', direccion: '' })
+      reset()
+      setCreateOpen(false)
       await load()
     } catch (e: any) { toast.error(e?.response?.data?.error?.message || e.message || 'No se pudo crear') } finally { setLoading(false) }
   }
@@ -150,28 +160,32 @@ export default function Inquilinos() {
               <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Nuevo inquilino</h2>
               <button className="btn-secondary" onClick={() => setCreateOpen(false)}>Cerrar</button>
             </div>
-            <form className="p-4 space-y-4" onSubmit={create}>
+            <form className="p-4 space-y-4" onSubmit={handleSubmit(create)}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="label">Nombre completo</label>
-                  <input className="input" value={form.nombre_completo} onChange={e => setForm(f => ({ ...f, nombre_completo: e.target.value }))} />
+                  <input className="input" {...register('nombre_completo')} />
+                  {errors.nombre_completo && <p className="text-xs text-red-500 mt-1">{errors.nombre_completo.message}</p>}
                 </div>
                 <div>
                   <label className="label">Correo (opcional)</label>
-                  <input className="input" type="email" value={form.correo} onChange={e => setForm(f => ({ ...f, correo: e.target.value }))} />
+                  <input className="input" type="email" {...register('correo')} />
+                  {errors.correo && <p className="text-xs text-red-500 mt-1">{errors.correo.message}</p>}
                 </div>
                 <div>
                   <label className="label">Teléfono (opcional)</label>
-                  <input className="input" value={form.telefono} onChange={e => setForm(f => ({ ...f, telefono: e.target.value }))} />
+                  <input className="input" {...register('telefono')} />
+                  {errors.telefono && <p className="text-xs text-red-500 mt-1">{errors.telefono.message}</p>}
                 </div>
                 <div>
                   <label className="label">Dirección (opcional)</label>
-                  <input className="input" value={form.direccion} onChange={e => setForm(f => ({ ...f, direccion: e.target.value }))} />
+                  <input className="input" {...register('direccion')} />
+                  {errors.direccion && <p className="text-xs text-red-500 mt-1">{errors.direccion.message}</p>}
                 </div>
               </div>
               <div className="flex justify-end gap-2">
                 <button type="button" className="btn-secondary" onClick={() => setCreateOpen(false)}>Cancelar</button>
-                <button className="btn-primary" type="submit" disabled={!canSubmit || loading}>{loading ? 'Guardando...' : 'Crear'}</button>
+                <button className="btn-primary" type="submit" disabled={isSubmitting || loading}>{isSubmitting || loading ? 'Guardando...' : 'Crear'}</button>
               </div>
             </form>
           </div>

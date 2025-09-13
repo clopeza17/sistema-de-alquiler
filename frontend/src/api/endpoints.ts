@@ -114,11 +114,11 @@ export const usuariosApi = {
     }
   },
 
-  create: async (payload: { email: string; password: string; nombres: string; apellidos: string; telefono?: string; roles: number[] }): Promise<void> => {
+  create: async (payload: { email: string; password: string; nombre_completo?: string; nombres?: string; apellidos?: string; telefono?: string; roles: number[] }): Promise<void> => {
     await api.post('/usuarios', payload)
   },
 
-  update: async (id: number, payload: { email?: string; nombres?: string; apellidos?: string; telefono?: string; roles?: number[] }): Promise<void> => {
+  update: async (id: number, payload: { email?: string; nombre_completo?: string; nombres?: string; apellidos?: string; telefono?: string; roles?: number[]; password?: string }): Promise<void> => {
     await api.put(`/usuarios/${id}`, payload)
   },
 
