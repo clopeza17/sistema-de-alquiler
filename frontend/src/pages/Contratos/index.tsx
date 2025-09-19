@@ -111,60 +111,62 @@ export default function Contratos() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Contratos</h1>
           <p className="text-gray-600 dark:text-gray-300">Gestión de contratos (crear, renovar, finalizar)</p>
         </div>
-        <button className="btn-primary" onClick={() => setCreateOpen(true)}>Nuevo contrato</button>
+        <button className="btn-primary w-full sm:w-auto" onClick={() => setCreateOpen(true)}>Nuevo contrato</button>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 dark:border-gray-700 p-4 rounded border flex flex-wrap gap-3 items-end">
-        <div>
-          <label className="label">Estado</label>
-          <select className="input" value={estado} onChange={e => setEstado(e.target.value)}>
-            <option value="">Todos</option>
-            <option value="ACTIVO">ACTIVO</option>
-            <option value="FINALIZADO">FINALIZADO</option>
-            <option value="RESCINDIDO">RESCINDIDO</option>
-          </select>
-        </div>
-        <div>
-          <label className="label">Propiedad</label>
-          <select className="input" value={propId} onChange={e => setPropId(e.target.value ? Number(e.target.value) : '')}>
-            <option value="">Todas</option>
-            {propsOptions.map(p => (
-              <option key={p.id} value={p.id}>{p.codigo} - {p.titulo}</option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label className="label">Inquilino</label>
-          <select className="input" value={inqId} onChange={e => setInqId(e.target.value ? Number(e.target.value) : '')}>
-            <option value="">Todos</option>
-            {inqOptions.map(i => (
-              <option key={i.id} value={i.id}>{i.nombre_completo}</option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label className="label">Desde</label>
-          <input className="input" type="date" value={fechaDesde} onChange={e => setFechaDesde(e.target.value)} />
-        </div>
-        <div>
-          <label className="label">Hasta</label>
-          <input className="input" type="date" value={fechaHasta} onChange={e => setFechaHasta(e.target.value)} />
-        </div>
-        <div>
-          <label className="label">Tamaño página</label>
-          <select className="input" value={limit} onChange={e => setLimit(parseInt(e.target.value))}>
-            <option value={10}>10</option>
-            <option value={20}>20</option>
-            <option value={50}>50</option>
-          </select>
-        </div>
-        <div>
-          <button className="btn-secondary" onClick={() => { setPage(1); load() }}>Aplicar</button>
+      <div className="bg-white dark:bg-gray-800 dark:border-gray-700 rounded border">
+        <div className="grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6">
+          <div>
+            <label className="label">Estado</label>
+            <select className="input" value={estado} onChange={e => setEstado(e.target.value)}>
+              <option value="">Todos</option>
+              <option value="ACTIVO">ACTIVO</option>
+              <option value="FINALIZADO">FINALIZADO</option>
+              <option value="RESCINDIDO">RESCINDIDO</option>
+            </select>
+          </div>
+          <div>
+            <label className="label">Propiedad</label>
+            <select className="input" value={propId} onChange={e => setPropId(e.target.value ? Number(e.target.value) : '')}>
+              <option value="">Todas</option>
+              {propsOptions.map(p => (
+                <option key={p.id} value={p.id}>{p.codigo} - {p.titulo}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="label">Inquilino</label>
+            <select className="input" value={inqId} onChange={e => setInqId(e.target.value ? Number(e.target.value) : '')}>
+              <option value="">Todos</option>
+              {inqOptions.map(i => (
+                <option key={i.id} value={i.id}>{i.nombre_completo}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="label">Desde</label>
+            <input className="input" type="date" value={fechaDesde} onChange={e => setFechaDesde(e.target.value)} />
+          </div>
+          <div>
+            <label className="label">Hasta</label>
+            <input className="input" type="date" value={fechaHasta} onChange={e => setFechaHasta(e.target.value)} />
+          </div>
+          <div>
+            <label className="label">Tamaño página</label>
+            <select className="input" value={limit} onChange={e => setLimit(parseInt(e.target.value))}>
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+            </select>
+          </div>
+          <div className="flex items-end">
+            <button className="btn-secondary w-full" onClick={() => { setPage(1); load() }}>Aplicar</button>
+          </div>
         </div>
       </div>
 

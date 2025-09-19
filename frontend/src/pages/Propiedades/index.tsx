@@ -44,22 +44,21 @@ export default function Propiedades() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Propiedades</h1>
-        <p className="text-gray-600 dark:text-gray-300">Listado y alta básica (API en progreso).</p>
-      </div>
-
-      <div className="flex justify-end">
-        <button className="btn-primary" onClick={() => setCreateOpen(true)}>Nueva propiedad</button>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Propiedades</h1>
+          <p className="text-gray-600 dark:text-gray-300">Listado y alta básica (API en progreso).</p>
+        </div>
+        <button className="btn-primary w-full sm:w-auto" onClick={() => setCreateOpen(true)}>Nueva propiedad</button>
       </div>
 
       <div className="bg-white dark:bg-gray-800 dark:border-gray-700 rounded border">
-        <div className="p-4 flex gap-3 items-end">
-          <div>
+        <div className="p-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
+          <div className="w-full sm:flex-1 sm:min-w-[220px]">
             <label className="label">Buscar</label>
             <input className="input" placeholder="Código, título o dirección" value={search} onChange={e => setSearch(e.target.value)} />
           </div>
-          <div>
+          <div className="w-full sm:w-40">
             <label className="label">Tamaño página</label>
             <select className="input" value={limit} onChange={e => setLimit(parseInt(e.target.value))}>
               <option value={10}>10</option>
@@ -67,8 +66,8 @@ export default function Propiedades() {
               <option value={50}>50</option>
             </select>
           </div>
-          <div>
-            <button className="btn-secondary" onClick={() => { setPage(1); load() }} type="button">Aplicar</button>
+          <div className="w-full sm:w-auto">
+            <button className="btn-secondary w-full sm:w-auto" onClick={() => { setPage(1); load() }} type="button">Aplicar</button>
           </div>
         </div>
         <div className="overflow-x-auto">
