@@ -68,8 +68,25 @@ export const listInquilinos = asyncHandler(async (req: Request, res: Response) =
   })
 })
 
+function sanitizeInquilinoPayload(body: any) {
+  const normalize = (value: any) => {
+    if (value === null || value === undefined) return undefined
+    const trimmed = String(value).trim()
+    return trimmed === '' ? undefined : trimmed
+  }
+
+  return {
+    doc_identidad: normalize(body.doc_identidad),
+    nombre_completo: normalize(body.nombre_completo),
+    telefono: normalize(body.telefono),
+    correo: normalize(body.correo),
+    direccion: normalize(body.direccion),
+  }
+}
+
 export const createInquilino = asyncHandler(async (req: Request, res: Response) => {
-  const data = inquilinoCreateSchema.parse(req.body)
+  const sanitized = sanitizeInquilinoPayload(req.body)
+  const data = inquilinoCreateSchema.parse(sanitized)
 
   const [result] = await pool.execute<ResultSetHeader>(
     `INSERT INTO inquilinos (doc_identidad, nombre_completo, telefono, correo, direccion, activo, creado_el, actualizado_el)
@@ -106,7 +123,8 @@ export const getInquilino = asyncHandler(async (req: Request, res: Response) => 
 
 export const updateInquilino = asyncHandler(async (req: Request, res: Response) => {
   const id = idSchema.parse(req.params.id)
-  const data = inquilinoUpdateSchema.parse(req.body)
+  const sanitized = sanitizeInquilinoPayload(req.body)
+  const data = inquilinoUpdateSchema.parse(sanitized)
 
   const [exists] = await pool.execute<RowDataPacket[]>(`SELECT id FROM inquilinos WHERE id = ?`, [id])
   if ((exists as any).length === 0) throw new NotFoundError('Inquilino no encontrado')
@@ -154,4 +172,3 @@ export default {
   changeEstadoInquilino,
   deleteInquilino,
 }
-

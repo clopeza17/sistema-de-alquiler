@@ -53,8 +53,36 @@ export const listPropiedades = asyncHandler(async (req: Request, res: Response) 
   })
 })
 
+function sanitizePropiedadPayload(body: any) {
+  const normalizeString = (value: any) => {
+    if (value === undefined || value === null) return undefined
+    const trimmed = String(value).trim()
+    return trimmed === '' ? undefined : trimmed
+  }
+
+  const normalizeNumber = (value: any) => {
+    if (value === undefined || value === null || value === '') return undefined
+    const num = Number(value)
+    return Number.isNaN(num) ? undefined : num
+  }
+
+  return {
+    codigo: normalizeString(body.codigo),
+    tipo: normalizeString(body.tipo),
+    titulo: normalizeString(body.titulo),
+    direccion: normalizeString(body.direccion),
+    dormitorios: normalizeNumber(body.dormitorios),
+    banos: normalizeNumber(body.banos),
+    area_m2: normalizeNumber(body.area_m2),
+    renta_mensual: normalizeNumber(body.renta_mensual),
+    deposito: normalizeNumber(body.deposito),
+    notas: normalizeString(body.notas),
+  }
+}
+
 export const createPropiedad = asyncHandler(async (req: Request, res: Response) => {
-  const data = propiedadCreateSchema.parse(req.body as any)
+  const sanitized = sanitizePropiedadPayload(req.body)
+  const data = propiedadCreateSchema.parse(sanitized)
 
   const [dup] = await pool.execute<RowDataPacket[]>(`SELECT id FROM propiedades WHERE codigo = ?`, [data.codigo])
   if (dup.length > 0) throw new BadRequestError('Código de propiedad ya existe')
@@ -67,9 +95,9 @@ export const createPropiedad = asyncHandler(async (req: Request, res: Response) 
       data.tipo,
       data.titulo,
       data.direccion,
-      0,
-      0,
-      data.area_m2 || null,
+      data.dormitorios ?? 0,
+      data.banos ?? 0,
+      data.area_m2 ?? null,
       data.renta_mensual,
       data.deposito ?? 0,
     ]
@@ -87,7 +115,8 @@ export const getPropiedad = asyncHandler(async (req: Request, res: Response) => 
 
 export const updatePropiedad = asyncHandler(async (req: Request, res: Response) => {
   const id = idSchema.parse(req.params.id)
-  const data = propiedadUpdateSchema.parse(req.body as any)
+  const sanitized = sanitizePropiedadPayload(req.body)
+  const data = propiedadUpdateSchema.parse(sanitized)
 
   const [exists] = await pool.execute<RowDataPacket[]>(`SELECT id FROM propiedades WHERE id = ?`, [id])
   if (exists.length === 0) throw new NotFoundError('Propiedad no encontrada')
@@ -98,6 +127,8 @@ export const updatePropiedad = asyncHandler(async (req: Request, res: Response) 
   if (data.tipo !== undefined) { fields.push('tipo = ?'); values.push(data.tipo) }
   if (data.titulo !== undefined) { fields.push('titulo = ?'); values.push(data.titulo) }
   if (data.direccion !== undefined) { fields.push('direccion = ?'); values.push(data.direccion) }
+  if (data.dormitorios !== undefined) { fields.push('dormitorios = ?'); values.push(data.dormitorios ?? 0) }
+  if (data.banos !== undefined) { fields.push('banos = ?'); values.push(data.banos ?? 0) }
   if (data.area_m2 !== undefined) { fields.push('area_m2 = ?'); values.push(data.area_m2 ?? null) }
   if (data.renta_mensual !== undefined) { fields.push('renta_mensual = ?'); values.push(data.renta_mensual) }
   if (data.deposito !== undefined) { fields.push('deposito = ?'); values.push(data.deposito ?? 0) }
@@ -136,4 +167,3 @@ export default {
   changeEstadoPropiedad,
   deletePropiedad,
 }
-

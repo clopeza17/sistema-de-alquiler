@@ -18,7 +18,17 @@ export default function Inquilinos() {
   const [editTarget, setEditTarget] = useState<InquilinoItem | null>(null)
   const [editForm, setEditForm] = useState<{ doc_identidad?: string; nombre_completo?: string; telefono?: string; correo?: string; direccion?: string; activo?: boolean }>({})
 
+  const dpiSchema = z.string()
+    .optional()
+    .or(z.literal(''))
+    .refine((val) => {
+      if (!val) return true
+      const digits = val.replace(/\D/g, '')
+      return digits.length === 13
+    }, 'DPI debe tener 13 dígitos')
+
   const inqSchema = z.object({
+    doc_identidad: dpiSchema,
     nombre_completo: z.string().min(2, 'Ingresa el nombre completo'),
     correo: z.string().email('Correo inválido').optional().or(z.literal('')),
     telefono: z.string().regex(/^$|^\d{8}$/,'8 dígitos').optional().or(z.literal('')),
@@ -27,7 +37,7 @@ export default function Inquilinos() {
   type InqForm = z.infer<typeof inqSchema>
   const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<InqForm>({
     resolver: zodResolver(inqSchema),
-    defaultValues: { nombre_completo: '', correo: '', telefono: '', direccion: '' },
+    defaultValues: { doc_identidad: '', nombre_completo: '', correo: '', telefono: '', direccion: '' },
   })
 
   const load = async () => {
@@ -46,7 +56,14 @@ export default function Inquilinos() {
   const create = async (data: InqForm) => {
     setLoading(true)
     try {
-      await inquilinosApi.create(data)
+      const payload = {
+        nombre_completo: data.nombre_completo,
+        correo: data.correo?.trim() || undefined,
+        telefono: data.telefono?.trim() || undefined,
+        direccion: data.direccion?.trim() || undefined,
+        doc_identidad: data.doc_identidad?.trim() ? data.doc_identidad.replace(/\D/g, '') : undefined,
+      }
+      await inquilinosApi.create(payload)
       notifySuccess('Inquilino creado')
       reset()
       setCreateOpen(false)
@@ -106,6 +123,7 @@ export default function Inquilinos() {
             <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
                 <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Nombre</th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">DPI</th>
                 <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Correo</th>
                 <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Teléfono</th>
                 <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Estado</th>
@@ -116,6 +134,7 @@ export default function Inquilinos() {
               {items.map(i => (
                 <tr key={i.id}>
                   <td className="px-4 py-2 text-sm text-gray-900 dark:text-gray-100">{i.nombre_completo}</td>
+                  <td className="px-4 py-2 text-sm text-gray-700 dark:text-gray-200">{i.doc_identidad || '—'}</td>
                   <td className="px-4 py-2 text-sm text-gray-700 dark:text-gray-200">{i.correo || '—'}</td>
                   <td className="px-4 py-2 text-sm text-gray-700 dark:text-gray-200">{i.telefono || '—'}</td>
                   <td className="px-4 py-2 text-sm">
@@ -125,7 +144,7 @@ export default function Inquilinos() {
                     <button className="btn-secondary" onClick={() => setOpenMenuId(openMenuId === i.id ? null : i.id)} aria-haspopup="menu" aria-expanded={openMenuId === i.id}>⋮</button>
                     {openMenuId === i.id && (
                       <div className="absolute right-2 mt-2 w-56 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow z-10 text-left">
-                        <button className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700" onClick={() => { setOpenMenuId(null); setEditTarget(i); setEditForm({ doc_identidad: (i as any).doc_identidad || '', nombre_completo: i.nombre_completo, telefono: i.telefono || '', correo: i.correo || '', direccion: i.direccion || '', activo: i.activo }); setEditOpen(true) }}>Editar</button>
+                        <button className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700" onClick={() => { setOpenMenuId(null); setEditTarget(i); setEditForm({ doc_identidad: i.doc_identidad || '', nombre_completo: i.nombre_completo, telefono: i.telefono || '', correo: i.correo || '', direccion: i.direccion || '', activo: i.activo }); setEditOpen(true) }}>Editar</button>
                         {!i.activo ? (
                           <button className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700" onClick={() => { setOpenMenuId(null); changeEstado(i, true) }}>Activar</button>
                         ) : (
@@ -161,6 +180,11 @@ export default function Inquilinos() {
             </div>
             <form className="p-4 space-y-4" onSubmit={handleSubmit(create)}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="label">DPI (opcional)</label>
+                  <input className="input" {...register('doc_identidad')} placeholder="13 dígitos" />
+                  {errors.doc_identidad && <p className="text-xs text-red-500 mt-1">{errors.doc_identidad.message}</p>}
+                </div>
                 <div>
                   <label className="label">Nombre completo</label>
                   <input className="input" {...register('nombre_completo')} />
@@ -202,8 +226,8 @@ export default function Inquilinos() {
             <div className="p-4 space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="label">Documento (DPI/NIT)</label>
-                  <input className="input" value={editForm.doc_identidad || ''} onChange={e => setEditForm(f => ({ ...f, doc_identidad: e.target.value }))} />
+                  <label className="label">DPI</label>
+                  <input className="input" value={editForm.doc_identidad || ''} onChange={e => setEditForm(f => ({ ...f, doc_identidad: e.target.value }))} placeholder="13 dígitos" />
                 </div>
                 <div>
                   <label className="label">Nombre completo</label>
@@ -235,7 +259,7 @@ export default function Inquilinos() {
                   if (!editTarget) return; setLoading(true);
                   try {
                     await inquilinosApi.update(editTarget.id, {
-                      doc_identidad: editForm.doc_identidad,
+                      doc_identidad: editForm.doc_identidad?.trim() ? editForm.doc_identidad.replace(/\D/g, '') : undefined,
                       nombre_completo: editForm.nombre_completo,
                       telefono: editForm.telefono,
                       correo: editForm.correo,

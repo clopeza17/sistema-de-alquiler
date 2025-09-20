@@ -188,6 +188,11 @@ export interface PropiedadItem {
   titulo: string
   direccion: string
   renta_mensual: number
+  dormitorios?: number
+  banos?: number
+  area_m2?: number | null
+  deposito?: number
+  notas?: string | null
   estado?: string
 }
 
