@@ -11,6 +11,15 @@ function App() {
           position="top-right"
           expand={true}
           richColors
+          toastOptions={{
+            duration: 3500,
+            classNames: {
+              success: 'shadow-lg',
+              error: 'shadow-lg',
+              warning: 'shadow-lg',
+              info: 'shadow-lg',
+            },
+          }}
         />
       </div>
     </BrowserRouter>

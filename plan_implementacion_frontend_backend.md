@@ -199,7 +199,7 @@ RATE_LIMIT_MAX=120
 - `GET /contratos/:id/facturas` — facturas asociadas al contrato.
 - `DELETE /contratos/:id` — eliminar contrato (validar estado).
 
-#### Facturación (Cuentas por Cobrar)
+#### Facturación (Cuentas por Cobrar) — **implementado**
 - `POST /facturacion/generar` — body: { anio, mes, emision, vencimiento } → llama SP mensual.
 - `GET /contratos/:id/facturas` — listar por contrato.
 - `GET /facturas` — filtros: estado, vencimiento, contrato.
@@ -207,7 +207,7 @@ RATE_LIMIT_MAX=120
 - `PATCH /facturas/:id/anular` (ADMIN)
 - `GET /facturas/catalogo/estados` — catálogo de estados de factura.
 
-#### Pagos
+#### Pagos — **implementado**
 - `POST /pagos` — { contrato_id, forma_pago_id, fecha_pago, monto, referencia }
 - `GET /pagos` — filtros: fecha, contrato, forma, estado.
 - `GET /pagos/:id`
@@ -215,7 +215,7 @@ RATE_LIMIT_MAX=120
 - `DELETE /pagos/:id` — eliminar si no tiene aplicaciones.
 - `GET /pagos/catalogo/formas-pago` — catálogo de formas de pago.
 
-#### Aplicaciones de Pago
+#### Aplicaciones de Pago — **implementado**
 - `POST /pagos/:id/aplicar` — { factura_id, monto_aplicado }
 - `GET /pagos/:id/aplicaciones` — listar aplicaciones de un pago.
 - `DELETE /pagos/:id/aplicaciones/:aplId` — revierte (triggers ajustan saldos)
@@ -236,7 +236,7 @@ RATE_LIMIT_MAX=120
 - `GET /mantenimiento/catalogo/estados` — catálogo de estados.
 - `GET /mantenimiento/catalogo/prioridades` — catálogo de prioridades.
 
-#### Reportes (vistas)
+#### Reportes (vistas) — **en progreso**
 - `GET /reportes/cxc` — `v_resumen_cxc` (cuentas por cobrar)
 - `GET /reportes/rentabilidad` — `v_rentabilidad_propiedad` (rentabilidad por propiedad)
 - `GET /reportes/ocupacion` — `v_ocupacion` (estado de ocupación)

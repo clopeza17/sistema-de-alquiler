@@ -6,7 +6,7 @@ const logger = createAuthLogger();
 /**
  * Tipos de roles del sistema
  */
-export type SystemRole = 'ADMIN' | 'PROPIETARIO' | 'INQUILINO' | 'AGENTE';
+export type SystemRole = 'ADMIN' | 'OPER' | 'PROPIETARIO' | 'INQUILINO' | 'AGENTE';
 
 /**
  * Mapeo de roles de base de datos a roles del sistema
@@ -14,6 +14,8 @@ export type SystemRole = 'ADMIN' | 'PROPIETARIO' | 'INQUILINO' | 'AGENTE';
 const DB_ROLE_MAPPING: Record<string, SystemRole> = {
   'Administrador': 'ADMIN',
   'ADMIN': 'ADMIN',
+  'Operador': 'OPER',
+  'OPER': 'OPER',
   'Agente': 'AGENTE',
   'AGENTE': 'AGENTE',
   'Propietario': 'PROPIETARIO',
@@ -62,7 +64,13 @@ const ROLE_PERMISSIONS: Record<SystemRole, Permission[]> = {
     'audit.read',
     'system.admin'
   ],
-  
+  OPER: [
+    'properties.read', 'properties.create', 'properties.update',
+    'contracts.read', 'contracts.create', 'contracts.update',
+    'payments.read', 'payments.create', 'payments.update',
+    'documents.read', 'documents.create',
+  ],
+
   PROPIETARIO: [
     // Puede ver usuarios básico, gestionar sus propiedades y contratos
     'users.read',

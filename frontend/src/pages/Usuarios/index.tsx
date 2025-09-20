@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { usuariosApi, RolCatalogo, UsuarioItem, UsuarioEstado } from '../../api/endpoints'
-import { toast } from 'sonner'
+import { notifyError, notifySuccess } from '../../lib/notifications'
 import Modal from '../../components/Modal'
 import { useAuthStore } from '../../state/authStore'
 
@@ -59,7 +59,7 @@ export default function Usuarios() {
       setTotal(list.total)
       setRoles(cats)
     } catch (e: any) {
-      toast.error(e?.response?.data?.error?.message || 'Error al cargar usuarios')
+      notifyError(e?.response?.data?.error?.message || 'Error al cargar usuarios')
     } finally {
       setLoading(false)
     }
@@ -82,12 +82,12 @@ export default function Usuarios() {
         nombre_completo: data.nombreCompleto,
         roles: [data.roleId as number],
       })
-      toast.success('Usuario creado')
+      notifySuccess('Usuario creado')
       reset()
       setCreateOpen(false)
       await load()
     } catch (e: any) {
-      toast.error(e?.response?.data?.error?.message || 'No se pudo crear el usuario')
+      notifyError(e?.response?.data?.error?.message || 'No se pudo crear el usuario')
     } finally { setLoading(false) }
   }
 
@@ -110,23 +110,23 @@ export default function Usuarios() {
         roles: editForm.roleId != null ? [editForm.roleId] : undefined,
         ...(editForm.password ? { password: editForm.password } : {}),
       })
-      toast.success('Usuario actualizado')
+      notifySuccess('Usuario actualizado')
       setEditOpen(false)
       setEditTarget(null)
       setEditForm({})
       await load()
     } catch (e: any) {
-      toast.error(e?.response?.data?.error?.message || 'No se pudo actualizar el usuario')
+      notifyError(e?.response?.data?.error?.message || 'No se pudo actualizar el usuario')
     }
   }
 
   const changeStatus = async (u: UsuarioItem, estado: 'ACTIVO' | 'INACTIVO' | 'BLOQUEADO') => {
     try {
       await usuariosApi.changeStatus(u.id, estado)
-      toast.success('Estado actualizado')
+      notifySuccess('Estado actualizado')
       await load()
     } catch (e: any) {
-      toast.error(e?.response?.data?.error?.message || 'No se pudo actualizar el estado')
+      notifyError(e?.response?.data?.error?.message || 'No se pudo actualizar el estado')
     }
   }
 
@@ -134,10 +134,10 @@ export default function Usuarios() {
     if (!confirm(`¿Eliminar usuario ${u.email}?`)) return
     try {
       await usuariosApi.remove(u.id)
-      toast.success('Usuario eliminado')
+      notifySuccess('Usuario eliminado')
       await load()
     } catch (e: any) {
-      toast.error(e?.response?.data?.error?.message || 'No se pudo eliminar el usuario')
+      notifyError(e?.response?.data?.error?.message || 'No se pudo eliminar el usuario')
     }
   }
 

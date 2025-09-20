@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import { toast } from 'sonner'
 import { contratosApi, ContratoItem, propiedadesApi, inquilinosApi, InquilinoItem, PropiedadItem } from '../../api/endpoints'
+import { notifyError, notifySuccess, notifyWarning } from '../../lib/notifications'
 
 export default function Contratos() {
   const [loading, setLoading] = useState(false)
@@ -37,7 +37,12 @@ export default function Contratos() {
   const [viewFacturasId, setViewFacturasId] = useState<number | null>(null)
   const [facturas, setFacturas] = useState<any[]>([])
 
-  const canCreate = useMemo(() => form.propiedad_id > 0 && form.inquilino_id > 0 && Number(form.monto_mensual) > 0 && form.fecha_inicio && form.fecha_fin, [form])
+  const canCreate = useMemo(() => {
+    if (!(form.propiedad_id > 0 && form.inquilino_id > 0 && Number(form.monto_mensual) > 0 && form.fecha_inicio && form.fecha_fin)) {
+      return false
+    }
+    return form.fecha_inicio <= form.fecha_fin
+  }, [form])
 
   const load = async () => {
     setLoading(true)
@@ -54,7 +59,7 @@ export default function Contratos() {
       setItems(data.items)
       setTotal(data.total)
     } catch (e: any) {
-      toast.error(e?.response?.data?.error?.message || e.message || 'Error al cargar contratos')
+      notifyError(e?.response?.data?.error?.message || e.message || 'Error al cargar contratos')
     } finally { setLoading(false) }
   }
 
@@ -77,20 +82,20 @@ export default function Contratos() {
     setLoading(true)
     try {
       await contratosApi.create({
-        propiedad_id: form.propiedad_id,
-        inquilino_id: form.inquilino_id,
-        monto_mensual: form.monto_mensual,
+        propiedad_id: Number(form.propiedad_id),
+        inquilino_id: Number(form.inquilino_id),
+        monto_mensual: Number(form.monto_mensual),
         fecha_inicio: form.fecha_inicio,
         fecha_fin: form.fecha_fin,
         deposito: Number(form.deposito) || 0,
         condiciones_especiales: form.condiciones_especiales || undefined,
       })
-      toast.success('Contrato creado')
+      notifySuccess('Contrato creado')
       setCreateOpen(false)
       setForm({ propiedad_id: 0, inquilino_id: 0, monto_mensual: '' as any, fecha_inicio: '', fecha_fin: '', deposito: '' as any, condiciones_especiales: '' })
       await load()
     } catch (e: any) {
-      toast.error(e?.response?.data?.error?.message || e.message || 'No se pudo crear')
+      notifyError(e?.response?.data?.error?.message || e.message || 'No se pudo crear')
     } finally { setLoading(false) }
   }
 
@@ -99,14 +104,49 @@ export default function Contratos() {
   const remove = async (c: ContratoItem) => {
     if (!confirm(`¿Eliminar contrato ${c.id}?`)) return
     setLoading(true)
-    try { await contratosApi.remove(c.id); toast.success('Contrato eliminado'); await load() } catch (e: any) { toast.error(e?.response?.data?.error?.message || e.message || 'No se pudo eliminar') } finally { setLoading(false) }
+    try { await contratosApi.remove(c.id); notifySuccess('Contrato eliminado'); await load() } catch (e: any) { notifyError(e?.response?.data?.error?.message || e.message || 'No se pudo eliminar') } finally { setLoading(false) }
   }
 
   const loadFacturas = async (id: number) => {
     try {
       const f = await contratosApi.facturas(id)
       setFacturas(f)
-    } catch (e: any) { toast.error(e?.response?.data?.error?.message || e.message || 'No se pudieron cargar facturas') }
+    } catch (e: any) { notifyError(e?.response?.data?.error?.message || e.message || 'No se pudieron cargar facturas') }
+  }
+
+  const handleSelectPropiedad = (value: number) => {
+    if (!value) {
+      setForm(f => ({ ...f, propiedad_id: 0 }))
+      return
+    }
+
+    const seleccionada = propsOptions.find(p => p.id === value)
+    setForm(f => ({
+      ...f,
+      propiedad_id: value,
+      monto_mensual: seleccionada ? Number(seleccionada.renta_mensual) : Number(f.monto_mensual),
+    }))
+  }
+
+  const handleFechaInicioChange = (value: string) => {
+    setForm(f => {
+      const next = { ...f, fecha_inicio: value }
+      if (value && f.fecha_fin && value > f.fecha_fin) {
+        notifyWarning('La fecha de finalización se ajustó a la fecha de inicio seleccionada')
+        next.fecha_fin = value
+      }
+      return next
+    })
+  }
+
+  const handleFechaFinChange = (value: string) => {
+    setForm(f => {
+      if (f.fecha_inicio && value && value < f.fecha_inicio) {
+        notifyError('La fecha de finalización no puede ser anterior a la fecha de inicio')
+        return f
+      }
+      return { ...f, fecha_fin: value }
+    })
   }
 
   return (
@@ -235,7 +275,7 @@ export default function Contratos() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="label">Propiedad</label>
-                  <select className="input" value={form.propiedad_id || ''} onChange={e => setForm(f => ({ ...f, propiedad_id: Number(e.target.value) }))}>
+                  <select className="input" value={form.propiedad_id || ''} onChange={e => handleSelectPropiedad(Number(e.target.value) || 0)}>
                     <option value="">Seleccione propiedad</option>
                     {propsOptions.map(p => (
                       <option key={p.id} value={p.id}>{p.codigo} - {p.titulo}</option>
@@ -261,11 +301,11 @@ export default function Contratos() {
                 </div>
                 <div>
                   <label className="label">Fecha inicio</label>
-                  <input className="input" type="date" value={form.fecha_inicio} onChange={e => setForm(f => ({ ...f, fecha_inicio: e.target.value }))} />
+                  <input className="input" type="date" value={form.fecha_inicio} onChange={e => handleFechaInicioChange(e.target.value)} />
                 </div>
                 <div>
                   <label className="label">Fecha fin</label>
-                  <input className="input" type="date" value={form.fecha_fin} onChange={e => setForm(f => ({ ...f, fecha_fin: e.target.value }))} />
+                  <input className="input" type="date" value={form.fecha_fin} onChange={e => handleFechaFinChange(e.target.value)} />
                 </div>
                 <div className="md:col-span-2">
                   <label className="label">Condiciones especiales</label>
@@ -320,8 +360,8 @@ export default function Contratos() {
                       deposito: editForm.deposito,
                       condiciones_especiales: editForm.condiciones_especiales,
                     })
-                    toast.success('Contrato actualizado'); setEditOpen(false); setEditTarget(null); await load()
-                  } catch (e: any) { toast.error(e?.response?.data?.error?.message || e.message || 'No se pudo actualizar') } finally { setLoading(false) }
+                    notifySuccess('Contrato actualizado'); setEditOpen(false); setEditTarget(null); await load()
+                  } catch (e: any) { notifyError(e?.response?.data?.error?.message || e.message || 'No se pudo actualizar') } finally { setLoading(false) }
                 }} disabled={loading}>Guardar</button>
               </div>
             </div>
@@ -351,7 +391,7 @@ export default function Contratos() {
                 <button className="btn-secondary" onClick={() => setRenewOpen(false)}>Cancelar</button>
                 <button className="btn-primary" onClick={async () => {
                   if (!editTarget) return; setLoading(true)
-                  try { await contratosApi.renovar(editTarget.id, { nueva_fecha_fin: editForm.nueva_fecha_fin || editTarget.fecha_fin, nuevo_monto: editForm.nuevo_monto }); toast.success('Contrato renovado'); setRenewOpen(false); setEditTarget(null); await load() } catch (e: any) { toast.error(e?.response?.data?.error?.message || e.message || 'No se pudo renovar') } finally { setLoading(false) }
+                  try { await contratosApi.renovar(editTarget.id, { nueva_fecha_fin: editForm.nueva_fecha_fin || editTarget.fecha_fin, nuevo_monto: editForm.nuevo_monto }); notifySuccess('Contrato renovado'); setRenewOpen(false); setEditTarget(null); await load() } catch (e: any) { notifyError(e?.response?.data?.error?.message || e.message || 'No se pudo renovar') } finally { setLoading(false) }
                 }} disabled={loading}>Renovar</button>
               </div>
             </div>
@@ -381,7 +421,7 @@ export default function Contratos() {
                 <button className="btn-secondary" onClick={() => setFinalizeOpen(false)}>Cancelar</button>
                 <button className="btn-primary" onClick={async () => {
                   if (!editTarget || !finalizeForm.fecha_finalizacion) return; setLoading(true)
-                  try { await contratosApi.finalizar(editTarget.id, { fecha_finalizacion: finalizeForm.fecha_finalizacion, motivo: finalizeForm.motivo }); toast.success('Contrato finalizado'); setFinalizeOpen(false); setEditTarget(null); await load() } catch (e: any) { toast.error(e?.response?.data?.error?.message || e.message || 'No se pudo finalizar') } finally { setLoading(false) }
+                  try { await contratosApi.finalizar(editTarget.id, { fecha_finalizacion: finalizeForm.fecha_finalizacion, motivo: finalizeForm.motivo }); notifySuccess('Contrato finalizado'); setFinalizeOpen(false); setEditTarget(null); await load() } catch (e: any) { notifyError(e?.response?.data?.error?.message || e.message || 'No se pudo finalizar') } finally { setLoading(false) }
                 }} disabled={loading || !finalizeForm.fecha_finalizacion}>Finalizar</button>
               </div>
             </div>

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { toast } from 'sonner'
 import { inquilinosApi, InquilinoItem } from '../../api/endpoints'
+import { notifyError, notifySuccess } from '../../lib/notifications'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -37,7 +37,7 @@ export default function Inquilinos() {
       setItems(data.items)
       setTotal(data.total)
     } catch (e: any) {
-      toast.error(e?.response?.data?.error?.message || e.message || 'Error al cargar inquilinos')
+      notifyError(e?.response?.data?.error?.message || e.message || 'Error al cargar inquilinos')
     } finally { setLoading(false) }
   }
 
@@ -47,29 +47,29 @@ export default function Inquilinos() {
     setLoading(true)
     try {
       await inquilinosApi.create(data)
-      toast.success('Inquilino creado')
+      notifySuccess('Inquilino creado')
       reset()
       setCreateOpen(false)
       await load()
-    } catch (e: any) { toast.error(e?.response?.data?.error?.message || e.message || 'No se pudo crear') } finally { setLoading(false) }
+    } catch (e: any) { notifyError(e?.response?.data?.error?.message || e.message || 'No se pudo crear') } finally { setLoading(false) }
   }
 
   const changeEstado = async (inq: InquilinoItem, activo: boolean) => {
     try {
       await inquilinosApi.changeStatus(inq.id, activo)
-      toast.success('Estado actualizado')
+      notifySuccess('Estado actualizado')
       await load()
-    } catch (e: any) { toast.error(e?.response?.data?.error?.message || e.message || 'No se pudo actualizar estado') }
+    } catch (e: any) { notifyError(e?.response?.data?.error?.message || e.message || 'No se pudo actualizar estado') }
   }
 
   const removeInquilino = async (inq: InquilinoItem) => {
     if (!confirm(`¿Eliminar inquilino ${inq.nombre_completo}?`)) return
     try {
       await inquilinosApi.remove(inq.id)
-      toast.success('Inquilino eliminado')
+      notifySuccess('Inquilino eliminado')
       await load()
     } catch (e: any) {
-      toast.error(e?.response?.data?.error?.message || e.message || 'No se pudo eliminar')
+      notifyError(e?.response?.data?.error?.message || e.message || 'No se pudo eliminar')
     }
   }
 
@@ -244,8 +244,8 @@ export default function Inquilinos() {
                     if (typeof editForm.activo === 'boolean' && editForm.activo !== editTarget.activo) {
                       await inquilinosApi.changeStatus(editTarget.id, editForm.activo)
                     }
-                    toast.success('Inquilino actualizado'); setEditOpen(false); setEditTarget(null); await load();
-                  } catch (e: any) { toast.error(e?.response?.data?.error?.message || e.message || 'No se pudo actualizar') } finally { setLoading(false) }
+                    notifySuccess('Inquilino actualizado'); setEditOpen(false); setEditTarget(null); await load();
+                  } catch (e: any) { notifyError(e?.response?.data?.error?.message || e.message || 'No se pudo actualizar') } finally { setLoading(false) }
                 }} disabled={loading}>Guardar</button>
               </div>
             </div>

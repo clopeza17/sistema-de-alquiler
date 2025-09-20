@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import { toast } from 'sonner'
 import { propiedadesApi, PropiedadItem } from '../../api/endpoints'
+import { notifyError, notifySuccess } from '../../lib/notifications'
 
 export default function Propiedades() {
   const [loading, setLoading] = useState(false)
@@ -25,7 +25,7 @@ export default function Propiedades() {
       const data = await propiedadesApi.list({ page, limit, search: search || undefined })
       setItems(data.items)
       setTotal(data.total)
-    } catch (e: any) { toast.error(e?.response?.data?.error?.message || e.message || 'Error al cargar propiedades') } finally { setLoading(false) }
+    } catch (e: any) { notifyError(e?.response?.data?.error?.message || e.message || 'Error al cargar propiedades') } finally { setLoading(false) }
   }
 
   useEffect(() => { load() }, [page, limit, search])
@@ -36,10 +36,10 @@ export default function Propiedades() {
     setLoading(true)
     try {
       await propiedadesApi.create(form as any)
-      toast.success('Propiedad creada')
+      notifySuccess('Propiedad creada')
       setForm({ codigo: '', tipo: 'APARTAMENTO', titulo: '', direccion: '', renta_mensual: '' as any })
       await load()
-    } catch (e: any) { toast.error(e?.response?.data?.error?.message || e.message || 'No se pudo crear') } finally { setLoading(false) }
+    } catch (e: any) { notifyError(e?.response?.data?.error?.message || e.message || 'No se pudo crear') } finally { setLoading(false) }
   }
 
   return (
@@ -47,7 +47,7 @@ export default function Propiedades() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Propiedades</h1>
-          <p className="text-gray-600 dark:text-gray-300">Listado y alta básica (API en progreso).</p>
+          <p className="text-gray-600 dark:text-gray-300">Listado y registro de propiedades (API en evolución).</p>
         </div>
         <button className="btn-primary w-full sm:w-auto" onClick={() => setCreateOpen(true)}>Nueva propiedad</button>
       </div>
@@ -95,7 +95,7 @@ export default function Propiedades() {
                     {openMenuId === p.id && (
                       <div className="absolute right-2 mt-2 w-56 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow z-10 text-left">
                         <button className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700" onClick={() => { setOpenMenuId(null); setEditTarget(p); setEditForm({ ...p }); setEditOpen(true) }}>Editar</button>
-                        <button className="w-full text-left px-4 py-2 hover:bg-red-50 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400" onClick={async () => { setOpenMenuId(null); try { await propiedadesApi.remove(p.id); toast.success('Propiedad eliminada'); await load() } catch (e: any) { toast.error(e?.response?.data?.error?.message || e.message || 'No se pudo eliminar') } }}>Eliminar</button>
+                        <button className="w-full text-left px-4 py-2 hover:bg-red-50 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400" onClick={async () => { setOpenMenuId(null); try { await propiedadesApi.remove(p.id); notifySuccess('Propiedad eliminada'); await load() } catch (e: any) { notifyError(e?.response?.data?.error?.message || e.message || 'No se pudo eliminar') } }}>Eliminar</button>
                       </div>
                     )}
                   </td>
@@ -233,8 +233,8 @@ export default function Propiedades() {
                     const { estado, ...payload } = editForm
                     await propiedadesApi.update(editTarget.id, payload as any)
                     if (estado) { await propiedadesApi.changeStatus(editTarget.id, estado) }
-                    toast.success('Propiedad actualizada'); setEditOpen(false); setEditTarget(null); await load();
-                  } catch (e: any) { toast.error(e?.response?.data?.error?.message || e.message || 'No se pudo actualizar') } finally { setLoading(false) }
+                    notifySuccess('Propiedad actualizada'); setEditOpen(false); setEditTarget(null); await load();
+                  } catch (e: any) { notifyError(e?.response?.data?.error?.message || e.message || 'No se pudo actualizar') } finally { setLoading(false) }
                 }} disabled={loading}>Guardar</button>
               </div>
             </div>

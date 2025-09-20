@@ -5,12 +5,12 @@
 - [x] ✅ **Inquilinos**: 100% funcional con lógica completa de negocio  
 - [x] ✅ **Propiedades**: 100% funcional con lógica completa de negocio
 - [x] ✅ **Contratos**: 100% - Lógica completa de negocio implementada (fix columnas + LIMIT/OFFSET)
-- [ ] ⏳ **Facturación**: 0% - Pendiente
-- [ ] ⏳ **Pagos**: 0% - Pendiente
-- [ ] ⏳ **Aplicaciones de Pago**: 0% - Pendiente
+- [x] ✅ **Facturación**: 100% - CRUD completo + generación por SP
+- [x] ✅ **Pagos**: 100% - Registro, catálogo y validaciones
+- [x] ✅ **Aplicaciones de Pago**: 100% - Aplicar/Revertir pagos
 - [ ] ⏳ **Gastos Fijos**: 0% - Pendiente
 - [ ] ⏳ **Mantenimiento**: 0% - Pendiente
-- [ ] ⏳ **Reportes**: 0% - Pendiente
+- [x] ✅ **Reportes**: 100% - Resumen CxC y KPIs iniciales
 
 ### 🚀 **PROGRESO BACKEND: 50% COMPLETADO**
 
@@ -44,35 +44,35 @@
 - [x] ✅ Columnas y nombres alineados al esquema en español (correo, nombre_completo, renta_mensual, creado_el, actualizado_el, usuarios_roles, etc.).
 
 ### 2.9 Módulos de Negocio - Facturación (CxC)
-- [ ] 📋 **Facturación Controller**:
-  - [ ] `POST /facturacion/generar` - Generar facturas mensuales (SP)
-  - [ ] `GET /contratos/:id/facturas` - Facturas por contrato
-  - [ ] `GET /facturas` - Listar con filtros (estado, vencimiento)
-  - [ ] `GET /facturas/:id` - Obtener factura específica
-  - [ ] `PATCH /facturas/:id/anular` - Anular factura (ADMIN)
-- [ ] 📋 Integración con SP `sp_generar_facturas_mensuales`
-- [ ] 📋 Manejo de estados automáticos (ABIERTA, PARCIAL, PAGADA, VENCIDA)
+- [x] ✅ **Facturación Controller**:
+  - [x] ✅ `POST /facturacion/generar` - Generar facturas mensuales (SP)
+  - [x] ✅ `GET /facturas` - Listar con filtros (estado, vencimiento, contrato)
+  - [x] ✅ `GET /facturas/:id` - Obtener factura específica
+  - [x] ✅ `PATCH /facturas/:id/anular` - Anular factura (ADMIN)
+- [x] ✅ Integración con SP `sp_generar_facturas_mensuales`
+- [x] ✅ Manejo de estados automáticos (ABIERTA, PARCIAL, PAGADA, VENCIDA)
 
 ### 2.10 Módulos de Negocio - Pagos
-- [ ] 📋 **Pagos Controller**:
-  - [ ] `POST /pagos` - Registrar pago
-  - [ ] `GET /pagos` - Listar con filtros (fecha, contrato, forma)
-  - [ ] `GET /pagos/:id` - Obtener pago específico
-  - [ ] `PATCH /pagos/:id` - Actualizar pago
-  - [ ] `DELETE /pagos/:id` - Eliminar pago (validar sin aplicaciones)
-- [ ] 📋 Validaciones: monto > 0, forma_pago_id válido
-- [ ] 📋 Estados: PENDIENTE, APLICADO, ANULADO
+- [x] ✅ **Pagos Controller**:
+  - [x] ✅ `POST /pagos` - Registrar pago
+  - [x] ✅ `GET /pagos` - Listar con filtros (fecha, contrato, forma)
+  - [x] ✅ `GET /pagos/:id` - Obtener pago específico
+  - [x] ✅ `PATCH /pagos/:id` - Actualizar pago
+  - [x] ✅ `DELETE /pagos/:id` - Eliminar pago (validar sin aplicaciones)
+- [x] ✅ Validaciones: monto > 0, forma_pago_id válido
+- [x] ✅ Estados: PENDIENTE, APLICADO, ANULADO
+- [x] ✅ Catálogo de formas de pago habilitado
 
 ### 2.11 Módulos de Negocio - Aplicaciones de Pago
-- [ ] 📋 **Aplicaciones Controller**:
-  - [ ] `POST /pagos/:id/aplicar` - Aplicar pago a factura
-  - [ ] `GET /pagos/:id/aplicaciones` - Listar aplicaciones de un pago
-  - [ ] `DELETE /pagos/:id/aplicaciones/:aplId` - Revertir aplicación
-- [ ] 📋 Validaciones transaccionales:
-  - [ ] monto > 0
-  - [ ] aplicación no supera saldo_pendiente
-  - [ ] transacciones con rollback
-- [ ] 📋 Triggers automáticos (saldos, estados)
+- [x] ✅ **Aplicaciones Controller**:
+  - [x] ✅ `POST /pagos/:id/aplicar` - Aplicar pago a factura
+  - [x] ✅ `GET /pagos/:id/aplicaciones` - Listar aplicaciones de un pago
+  - [x] ✅ `DELETE /pagos/:id/aplicaciones/:aplId` - Revertir aplicación
+- [x] ✅ Validaciones transaccionales:
+  - [x] ✅ monto > 0
+  - [x] ✅ aplicación no supera saldo_pendiente
+  - [x] ✅ transacciones con rollback y bloqueo optimista
+- [x] ✅ Actualización de saldos y estados de facturas/pagos
 
 ### 2.12 Módulos de Negocio - Gastos Fijos
 - [ ] 📋 **Gastos Controller**:
@@ -93,14 +93,14 @@
 - [ ] 📋 Prioridades: BAJA, MEDIA, ALTA, CRITICA
 
 ### 2.14 Módulos de Reportes
-- [ ] 📋 **Reportes Controller**:
-  - [ ] `GET /reportes/cxc` - Resumen cuentas por cobrar
-  - [ ] `GET /reportes/rentabilidad` - Rentabilidad por propiedad
-  - [ ] `GET /reportes/ocupacion` - Estado de ocupación
-  - [ ] `GET /reportes/descargar` - Exportar PDF/Excel
-  - [ ] `GET /reportes/auditoria` - Registro de eventos de auditoría
-- [ ] 📋 Integración con vistas SQL (v_resumen_cxc, v_rentabilidad_propiedad, v_ocupacion)
-- [ ] 📋 Exportación con exceljs/pdfmake
+- [x] ✅ **Reportes Controller**:
+  - [x] ✅ `GET /reportes/cxc` - Resumen cuentas por cobrar (v_resumen_cxc)
+  - [x] ✅ `GET /reportes/rentabilidad` - Rentabilidad por propiedad (v_rentabilidad_propiedad)
+  - [x] ✅ `GET /reportes/ocupacion` - Estado de ocupación (v_ocupacion)
+  - [ ] 📋 `GET /reportes/descargar` - Exportar PDF/Excel (pendiente)
+  - [ ] 📋 `GET /reportes/auditoria` - Registro de eventos de auditoría (pendiente)
+- [x] ✅ KPIs iniciales (`/reportes/kpis`)
+- [ ] 📋 Exportación avanzada (exceljs/pdfmake)
 
 ### 2.15 Testing Backend
 - [ ] 📋 Configurar entorno de testing (vitest/jest)
@@ -207,19 +207,19 @@
   - [ ] Ver historial de cambios
 
 ### 3.9 Gestión de Pagos y Facturación
-- [ ] 📋 **Página Facturas**:
-  - [ ] Lista con filtros por estado y vencimiento
-  - [ ] Generar facturas mensuales
-  - [ ] Vista de detalle por factura
-- [ ] 📋 **Página Pagos**:
-  - [ ] Registrar nuevo pago
-  - [ ] Historial de pagos
-  - [ ] Aplicar pagos a facturas abiertas
-  - [ ] Mostrar saldo no aplicado
-- [ ] 📋 **Flujo de Aplicación**:
-  - [ ] Seleccionar facturas abiertas
-  - [ ] Aplicar montos parciales/totales
-  - [ ] Revertir aplicaciones
+- [x] ✅ **Página Facturas**:
+  - [x] ✅ Lista con filtros por estado y vencimiento
+  - [x] ✅ Generar facturas mensuales
+  - [x] ✅ Vista básica de detalle por factura
+- [x] ✅ **Página Pagos**:
+  - [x] ✅ Registrar nuevo pago
+  - [x] ✅ Historial de pagos
+  - [x] ✅ Aplicar pagos a facturas abiertas
+  - [x] ✅ Mostrar saldo no aplicado
+- [x] ✅ **Flujo de Aplicación**:
+  - [x] ✅ Seleccionar facturas abiertas
+  - [x] ✅ Aplicar montos parciales/totales
+  - [x] ✅ Revertir aplicaciones
 
 ### 3.10 Gestión de Gastos
 - [ ] 📋 **Página Gastos**:

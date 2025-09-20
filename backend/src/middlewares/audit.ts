@@ -17,7 +17,8 @@ export type AuditAction =
  * Tipos de recursos del sistema
  */
 export type ResourceType = 
-  | 'USER' | 'PROPERTY' | 'CONTRACT' | 'PAYMENT' 
+  | 'USER' | 'PROPERTY' | 'CONTRACT' | 'PAYMENT'
+  | 'INVOICE' | 'FACTURA' | 'facturas'
   | 'DOCUMENT' | 'ROLE' | 'SESSION';
 
 /**
@@ -278,6 +279,7 @@ function getResourceTypeFromPath(path: string): ResourceType {
   if (path.includes('/propiedades') || path.includes('/properties')) return 'PROPERTY';
   if (path.includes('/contratos') || path.includes('/contracts')) return 'CONTRACT';
   if (path.includes('/pagos') || path.includes('/payments')) return 'PAYMENT';
+  if (path.includes('/facturas') || path.includes('/invoices') || path.includes('/facturacion')) return 'INVOICE';
   if (path.includes('/documentos') || path.includes('/documents')) return 'DOCUMENT';
   if (path.includes('/roles')) return 'ROLE';
   if (path.includes('/auth')) return 'SESSION';

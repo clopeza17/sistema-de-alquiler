@@ -600,7 +600,7 @@ export const getFacturasContrato = asyncHandler(async (req: Request, res: Respon
       ORDER BY fecha_emision DESC
     `, [id]);
     
-    await auditAction(req, 'READ', 'facturas', null, { contrato_id: id });
+    await auditAction(req, 'READ', 'INVOICE', null, { contrato_id: id });
     
     res.json({
       data: facturas,

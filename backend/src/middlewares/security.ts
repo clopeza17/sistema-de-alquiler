@@ -56,9 +56,12 @@ export const corsOptions: cors.CorsOptions = {
 /**
  * Rate limiting general
  */
+const GENERAL_RATE_LIMIT_WINDOW = env.NODE_ENV === 'production' ? 15 * 60 * 1000 : 60 * 60 * 1000; // 15 min prod, 60 min dev
+const GENERAL_RATE_LIMIT_MAX = env.NODE_ENV === 'production' ? 400 : 2000;
+
 export const generalRateLimit = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 100, // máximo 100 requests por ventana por IP
+  windowMs: GENERAL_RATE_LIMIT_WINDOW,
+  max: GENERAL_RATE_LIMIT_MAX,
   message: {
     error: {
       code: 'TOO_MANY_REQUESTS',
@@ -67,6 +70,22 @@ export const generalRateLimit = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
+  skip: (req) => {
+    if (env.NODE_ENV !== 'production') {
+      return true;
+    }
+
+    if (req.method === 'OPTIONS') {
+      return true;
+    }
+
+    const path = req.path || '';
+    if (path === '/health' || path.startsWith('/static') || path.startsWith('/favicon')) {
+      return true;
+    }
+
+    return false;
+  },
   handler: (req, res) => {
     logger.warn({
       ip: req.ip,

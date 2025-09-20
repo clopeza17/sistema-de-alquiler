@@ -22,7 +22,7 @@ router.use(requireAuth);
  * Acceso: ADMIN, OPERADOR
  */
 router.get('/', 
-  requireRoles('ADMIN', 'AGENTE'),
+  requireRoles('ADMIN', 'OPER', 'AGENTE'),
   getContratos
 );
 
@@ -31,7 +31,7 @@ router.get('/',
  * Acceso: ADMIN, AGENTE
  */
 router.get('/:id', 
-  requireRoles('ADMIN', 'AGENTE'),
+  requireRoles('ADMIN', 'OPER', 'AGENTE'),
   getContratoById
 );
 
@@ -40,7 +40,7 @@ router.get('/:id',
  * Acceso: ADMIN, AGENTE
  */
 router.post('/', 
-  requireRoles('ADMIN', 'AGENTE'),
+  requireRoles('ADMIN', 'OPER', 'AGENTE'),
   createContrato
 );
 
@@ -49,7 +49,7 @@ router.post('/',
  * Acceso: ADMIN, AGENTE
  */
 router.put('/:id', 
-  requireRoles('ADMIN', 'AGENTE'),
+  requireRoles('ADMIN', 'OPER', 'AGENTE'),
   updateContrato
 );
 
@@ -58,7 +58,7 @@ router.put('/:id',
  * Acceso: ADMIN, AGENTE
  */
 router.put('/:id/finalizar', 
-  requireRoles('ADMIN', 'AGENTE'),
+  requireRoles('ADMIN', 'OPER', 'AGENTE'),
   finalizarContrato
 );
 
@@ -67,7 +67,7 @@ router.put('/:id/finalizar',
  * Acceso: ADMIN, AGENTE
  */
 router.put('/:id/renovar', 
-  requireRoles('ADMIN', 'AGENTE'),
+  requireRoles('ADMIN', 'OPER', 'AGENTE'),
   renovarContrato
 );
 
@@ -76,7 +76,7 @@ router.put('/:id/renovar',
  * Acceso: ADMIN, AGENTE
  */
 router.get('/:id/facturas', 
-  requireRoles('ADMIN', 'AGENTE'),
+  requireRoles('ADMIN', 'OPER', 'AGENTE'),
   getFacturasContrato
 );
 

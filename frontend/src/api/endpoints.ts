@@ -280,3 +280,141 @@ export const contratosApi = {
     return response.data?.data || []
   },
 }
+
+// ===== Facturas / Facturación =====
+export type FacturaEstado = 'ABIERTA' | 'PARCIAL' | 'PAGADA' | 'VENCIDA' | 'ANULADA'
+
+export interface FacturaItem {
+  id: number
+  contrato_id: number
+  anio_periodo: number
+  mes_periodo: number
+  fecha_emision: string
+  fecha_vencimiento: string
+  detalle: string
+  monto_total: number
+  saldo_pendiente: number
+  estado: FacturaEstado
+  propiedad_codigo?: string
+  propiedad_titulo?: string
+  inquilino_nombre?: string
+}
+
+export interface FacturasListResponse {
+  items: FacturaItem[]
+  total: number
+  page: number
+  limit: number
+}
+
+export const facturacionApi = {
+  generar: async (payload: { anio: number; mes: number; fecha_emision: string; fecha_vencimiento: string }): Promise<{ generadas: number }> => {
+    const res = await api.post('/facturacion/generar', payload)
+    return res.data?.data || { generadas: 0 }
+  },
+}
+
+export const facturasApi = {
+  list: async (params?: { page?: number; limit?: number; estado?: FacturaEstado; contrato_id?: number; fecha_desde?: string; fecha_hasta?: string }): Promise<FacturasListResponse> => {
+    const res = await api.get('/facturas', { params })
+    const data = res.data
+    return {
+      items: (data?.data || []) as FacturaItem[],
+      total: data?.meta?.pagination?.total || 0,
+      page: data?.meta?.pagination?.page || params?.page || 1,
+      limit: data?.meta?.pagination?.limit || params?.limit || 10,
+    }
+  },
+  get: async (id: number): Promise<FacturaItem> => {
+    const res = await api.get(`/facturas/${id}`)
+    return res.data?.data
+  },
+  anular: async (id: number): Promise<void> => {
+    await api.patch(`/facturas/${id}/anular`)
+  },
+  estados: async (): Promise<FacturaEstado[]> => {
+    const res = await api.get('/facturas/catalogo/estados')
+    return res.data?.data || []
+  },
+}
+
+// ===== Pagos y Aplicaciones =====
+export interface FormaPagoItem { id: number; codigo: string; nombre: string }
+
+export interface PagoItem {
+  id: number
+  contrato_id: number
+  forma_pago_id: number
+  fecha_pago: string
+  referencia?: string
+  monto: number
+  saldo_no_aplicado: number
+  notas?: string
+}
+
+export interface PagosListResponse {
+  items: PagoItem[]
+  total: number
+  page: number
+  limit: number
+}
+
+export const pagosApi = {
+  list: async (params?: { page?: number; limit?: number; contrato_id?: number; forma_pago_id?: number; fecha_desde?: string; fecha_hasta?: string }): Promise<PagosListResponse> => {
+    const res = await api.get('/pagos', { params })
+    const data = res.data
+    return {
+      items: (data?.data || []) as PagoItem[],
+      total: data?.meta?.pagination?.total || 0,
+      page: data?.meta?.pagination?.page || params?.page || 1,
+      limit: data?.meta?.pagination?.limit || params?.limit || 10,
+    }
+  },
+  create: async (payload: { contrato_id: number; forma_pago_id: number; fecha_pago: string; monto: number; referencia?: string; notas?: string }): Promise<void> => {
+    await api.post('/pagos', payload)
+  },
+  get: async (id: number): Promise<PagoItem> => {
+    const res = await api.get(`/pagos/${id}`)
+    return res.data?.data
+  },
+  update: async (id: number, payload: Partial<{ forma_pago_id: number; fecha_pago: string; referencia?: string; notas?: string }>): Promise<void> => {
+    await api.patch(`/pagos/${id}`, payload)
+  },
+  remove: async (id: number): Promise<void> => {
+    await api.delete(`/pagos/${id}`)
+  },
+  formas: async (): Promise<FormaPagoItem[]> => {
+    const res = await api.get('/pagos/catalogo/formas-pago')
+    return res.data?.data || []
+  },
+  aplicaciones: async (pago_id: number): Promise<{ id: number; factura_id: number; monto_aplicado: number; factura_estado: string }[]> => {
+    const res = await api.get(`/pagos/${pago_id}/aplicaciones`)
+    return res.data?.data || []
+  },
+  aplicar: async (pago_id: number, payload: { factura_id: number; monto_aplicado: number }): Promise<void> => {
+    await api.post(`/pagos/${pago_id}/aplicar`, payload)
+  },
+  revertir: async (pago_id: number, aplId: number): Promise<void> => {
+    await api.delete(`/pagos/${pago_id}/aplicaciones/${aplId}`)
+  },
+}
+
+// ===== Reportes =====
+export const reportesApi = {
+  cxc: async (params?: { contrato_id?: number }) => {
+    const res = await api.get('/reportes/cxc', { params })
+    return res.data?.data || []
+  },
+  rentabilidad: async () => {
+    const res = await api.get('/reportes/rentabilidad')
+    return res.data?.data || []
+  },
+  ocupacion: async () => {
+    const res = await api.get('/reportes/ocupacion')
+    return res.data?.data || []
+  },
+  kpis: async () => {
+    const res = await api.get('/reportes/kpis')
+    return res.data?.data || {}
+  },
+}
