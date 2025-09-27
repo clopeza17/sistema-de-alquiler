@@ -144,10 +144,16 @@ export const listarPagos = asyncHandler(async (req: Request, res: Response) => {
       params,
     );
 
+    const items = (rows as PagoRow[]).map((row) => ({
+      ...row,
+      monto: Number(row.monto),
+      saldo_no_aplicado: Number(row.saldo_no_aplicado),
+    }));
+
     await auditAction(req, 'READ', 'PAYMENT', undefined, { filters, page, limit, total });
 
     res.json({
-      data: rows,
+      data: items,
       meta: {
         pagination: {
           page,

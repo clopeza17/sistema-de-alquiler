@@ -148,8 +148,8 @@ export default function Pagos() {
                   <td className="px-4 py-2 text-sm">{p.id}</td>
                   <td className="px-4 py-2 text-sm">{p.contrato_id}</td>
                   <td className="px-4 py-2 text-sm">{p.fecha_pago}</td>
-                  <td className="px-4 py-2 text-sm text-right">{p.monto.toFixed(2)}</td>
-                  <td className="px-4 py-2 text-sm text-right">{p.saldo_no_aplicado.toFixed(2)}</td>
+                  <td className="px-4 py-2 text-sm text-right">{Number(p.monto).toFixed(2)}</td>
+                  <td className="px-4 py-2 text-sm text-right">{Number(p.saldo_no_aplicado).toFixed(2)}</td>
                   <td className="px-4 py-2 text-sm text-right">
                     <div className="inline-flex gap-2">
                       <button className="btn-secondary" onClick={() => openAplicaciones(p)}>Aplicaciones</button>
