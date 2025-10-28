@@ -3,7 +3,8 @@ import { toast, ToastOptions } from 'sonner'
 type ToastType = 'success' | 'error' | 'warning' | 'info'
 
 const toastCache = new Map<string, number>()
-const DEDUP_WINDOW_MS = 600
+// Evitar duplicados rápidos (React StrictMode monta efectos dos veces en dev)
+const DEDUP_WINDOW_MS = 2000
 
 const emitToast = (type: ToastType, message: string, options?: ToastOptions) => {
   if (!message) return
@@ -32,4 +33,3 @@ export const notifyApiError = (error: any, fallback: string = 'Ocurrió un error
   const message = error?.response?.data?.error?.message || error?.message || fallback
   notifyError(message)
 }
-

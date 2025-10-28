@@ -404,6 +404,115 @@ export const pagosApi = {
   },
 }
 
+// ===== Gastos Fijos =====
+export interface TipoGastoItem {
+  id: number
+  nombre: string
+  descripcion?: string
+}
+
+export interface GastoItem {
+  id: number
+  propiedad_id: number
+  propiedad_codigo?: string
+  propiedad_titulo?: string
+  tipo_gasto_id: number
+  tipo_gasto_nombre?: string
+  fecha_gasto: string
+  detalle?: string | null
+  monto: number
+  creado_por: number
+  creado_por_nombre?: string
+  creado_el: string
+}
+
+export interface GastosListResponse {
+  items: GastoItem[]
+  total: number
+  page: number
+  limit: number
+}
+
+export const gastosApi = {
+  list: async (params?: { page?: number; limit?: number; propiedad_id?: number; tipo_gasto_id?: number; fecha_desde?: string; fecha_hasta?: string }): Promise<GastosListResponse> => {
+    const res = await api.get('/gastos', { params })
+    const data = res.data
+    const pagination = data?.meta?.pagination || {}
+    return {
+      items: (data?.data || []) as GastoItem[],
+      total: pagination.total || 0,
+      page: pagination.page || params?.page || 1,
+      limit: pagination.limit || params?.limit || 10,
+    }
+  },
+  create: async (payload: { propiedad_id: number; tipo_gasto_id: number; fecha_gasto: string; monto: number; detalle?: string | null }): Promise<void> => {
+    await api.post('/gastos', payload)
+  },
+  update: async (id: number, payload: Partial<{ tipo_gasto_id: number; fecha_gasto: string; monto: number; detalle?: string | null }>): Promise<void> => {
+    await api.put(`/gastos/${id}`, payload)
+  },
+  remove: async (id: number): Promise<void> => {
+    await api.delete(`/gastos/${id}`)
+  },
+  catalogoTipos: async (): Promise<TipoGastoItem[]> => {
+    const res = await api.get('/gastos/catalogo/tipos')
+    return res.data?.data || []
+  },
+}
+
+// ===== Mantenimiento =====
+export type MantenimientoEstado = 'ABIERTA' | 'EN_PROCESO' | 'EN_ESPERA' | 'RESUELTA' | 'CANCELADA'
+export type MantenimientoPrioridad = 'BAJA' | 'MEDIA' | 'ALTA' | 'CRITICA'
+
+export interface MantenimientoItem {
+  id: number
+  propiedad_id: number
+  propiedad_codigo?: string
+  propiedad_titulo?: string
+  contrato_id?: number | null
+  inquilino_nombre?: string | null
+  reportado_por?: string | null
+  asunto: string
+  descripcion?: string | null
+  estado: MantenimientoEstado
+  prioridad: MantenimientoPrioridad
+  abierta_el: string
+  cerrada_el?: string | null
+  creado_por: number
+  creado_por_nombre?: string
+  actualizado_el: string
+}
+
+export interface MantenimientoListResponse {
+  items: MantenimientoItem[]
+  total: number
+  page: number
+  limit: number
+}
+
+export const mantenimientoApi = {
+  list: async (params?: { page?: number; limit?: number; propiedad_id?: number; estado?: MantenimientoEstado; prioridad?: MantenimientoPrioridad; fecha_desde?: string; fecha_hasta?: string }): Promise<MantenimientoListResponse> => {
+    const res = await api.get('/mantenimiento', { params })
+    const data = res.data
+    const pagination = data?.meta?.pagination || {}
+    return {
+      items: (data?.data || []) as MantenimientoItem[],
+      total: pagination.total || 0,
+      page: pagination.page || params?.page || 1,
+      limit: pagination.limit || params?.limit || 10,
+    }
+  },
+  create: async (payload: { propiedad_id: number; contrato_id?: number | null; asunto: string; descripcion?: string | null; prioridad?: MantenimientoPrioridad; estado?: MantenimientoEstado; reportado_por?: string | null }): Promise<void> => {
+    await api.post('/mantenimiento', payload)
+  },
+  update: async (id: number, payload: Partial<{ estado: MantenimientoEstado; prioridad: MantenimientoPrioridad; descripcion?: string | null; reportado_por?: string | null }>): Promise<void> => {
+    await api.patch(`/mantenimiento/${id}`, payload)
+  },
+  cancel: async (id: number): Promise<void> => {
+    await api.delete(`/mantenimiento/${id}`)
+  },
+}
+
 // ===== Reportes =====
 export const reportesApi = {
   cxc: async (params?: { contrato_id?: number }) => {

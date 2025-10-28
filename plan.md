@@ -8,11 +8,11 @@
 - [x] ✅ **Facturación**: 100% - CRUD completo + generación por SP
 - [x] ✅ **Pagos**: 100% - Registro, catálogo y validaciones
 - [x] ✅ **Aplicaciones de Pago**: 100% - Aplicar/Revertir pagos
-- [ ] ⏳ **Gastos Fijos**: 0% - Pendiente
-- [ ] ⏳ **Mantenimiento**: 0% - Pendiente
+- [x] ✅ **Gastos Fijos**: 100% - CRUD básico con validaciones
+- [x] ✅ **Mantenimiento**: 100% - Gestión de tickets y estados
 - [x] ✅ **Reportes**: 100% - Resumen CxC y KPIs iniciales
 
-### 🚀 **PROGRESO BACKEND: 50% COMPLETADO**
+### 🚀 **PROGRESO BACKEND: 60% COMPLETADO**
 
 > **Stack**: React.js + Node.js/Express + MySQL | **Zona**: Guatemala (-06:00) | **Moneda**: GTQ | **Fechas**: dd/mm/aaaa
 
@@ -75,22 +75,23 @@
 - [x] ✅ Actualización de saldos y estados de facturas/pagos
 
 ### 2.12 Módulos de Negocio - Gastos Fijos
-- [ ] 📋 **Gastos Controller**:
-  - [ ] `GET /gastos` - Listar con filtros (propiedad, tipo, fecha)
-  - [ ] `POST /gastos` - Crear gasto
-  - [ ] `PUT /gastos/:id` - Actualizar gasto
-  - [ ] `DELETE /gastos/:id` - Eliminar gasto
-- [ ] 📋 Catálogo de tipos de gasto
-- [ ] 📋 Validaciones: monto >= 0, tipo_gasto_id válido
+- [x] ✅ **Gastos Controller**:
+  - [x] ✅ `GET /gastos` - Listar con filtros (propiedad, tipo, fecha)
+  - [x] ✅ `POST /gastos` - Crear gasto
+  - [x] ✅ `PUT /gastos/:id` - Actualizar gasto
+  - [x] ✅ `DELETE /gastos/:id` - Eliminar gasto
+- [x] ✅ Catálogo de tipos de gasto (`GET /gastos/catalogo/tipos`)
+- [x] ✅ Validaciones: monto ≥ 0, tipo_gasto_id válido, propiedad existente
 
 ### 2.13 Módulos de Negocio - Mantenimiento
-- [ ] 📋 **Mantenimiento Controller**:
-  - [ ] `GET /mantenimiento` - Listar solicitudes con filtros
-  - [ ] `POST /mantenimiento` - Crear ticket
-  - [ ] `PATCH /mantenimiento/:id` - Cambiar estado/prioridad
-  - [ ] `GET /mantenimiento/:id` - Obtener ticket específico
-- [ ] 📋 Estados: ABIERTA, EN_PROCESO, EN_ESPERA, RESUELTA, CANCELADA
-- [ ] 📋 Prioridades: BAJA, MEDIA, ALTA, CRITICA
+- [x] ✅ **Mantenimiento Controller**:
+  - [x] ✅ `GET /mantenimiento` - Listar solicitudes con filtros (propiedad, estado, prioridad, fechas)
+  - [x] ✅ `POST /mantenimiento` - Crear ticket
+  - [x] ✅ `PATCH /mantenimiento/:id` - Cambiar estado/prioridad/descripcion
+  - [x] ✅ `GET /mantenimiento/:id` - Obtener ticket específico
+  - [x] ✅ `DELETE /mantenimiento/:id` - Cancelar ticket (estado CANCELADA)
+- [x] ✅ Estados soportados: ABIERTA, EN_PROCESO, EN_ESPERA, RESUELTA, CANCELADA
+- [x] ✅ Prioridades soportadas: BAJA, MEDIA, ALTA, CRITICA
 
 ### 2.14 Módulos de Reportes
 - [x] ✅ **Reportes Controller**:
@@ -377,6 +378,6 @@
 - **Frontend**: ~90 elementos  
 - **Calidad/Testing**: ~30 elementos
 
-**Estado actual**: ✅ 40/200+ completadas (~20%)
+**Estado actual**: ✅ 48/200+ completadas (~24%)
 
-> **Próximo milestone**: Completar Fase 1 y 2.1-2.3 (configuración base del backend)
+> **Próximo milestone**: Consolidar pruebas automatizadas (módulos nuevos) y documentación de API

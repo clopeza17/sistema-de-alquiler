@@ -216,6 +216,82 @@ export const aplicacionPagoSchema = z.object({
   monto_aplicado: amountSchema,
 });
 
+// Gasto fijo
+const gastoDetalleSchema = z.string().max(200, 'Detalle muy largo');
+
+export const gastoCreateSchema = z.object({
+  propiedad_id: idSchema,
+  tipo_gasto_id: idSchema,
+  fecha_gasto: dbDateSchema,
+  monto: amountSchema,
+  detalle: gastoDetalleSchema.optional(),
+});
+
+export const gastoUpdateSchema = z.object({
+  tipo_gasto_id: idSchema.optional(),
+  fecha_gasto: dbDateSchema.optional(),
+  monto: amountSchema.optional(),
+  detalle: gastoDetalleSchema.optional(),
+}).refine(
+  data => Object.keys(data).length > 0,
+  'Debe proporcionar al menos un campo para actualizar'
+);
+
+export const gastoFiltersSchema = z.object({
+  propiedad_id: idSchema.optional(),
+  tipo_gasto_id: idSchema.optional(),
+  fecha_desde: dbDateSchema.optional(),
+  fecha_hasta: dbDateSchema.optional(),
+}).refine(
+  data => {
+    if (data.fecha_desde && data.fecha_hasta) {
+      return data.fecha_desde <= data.fecha_hasta;
+    }
+    return true;
+  },
+  'Fecha_hasta debe ser posterior o igual a fecha_desde'
+);
+
+// Mantenimiento
+const mantenimientoEstadoEnum = z.enum(['ABIERTA', 'EN_PROCESO', 'EN_ESPERA', 'RESUELTA', 'CANCELADA']);
+const mantenimientoPrioridadEnum = z.enum(['BAJA', 'MEDIA', 'ALTA', 'CRITICA']);
+
+export const mantenimientoCreateSchema = z.object({
+  propiedad_id: idSchema,
+  contrato_id: idSchema.optional(),
+  asunto: z.string().min(5, 'Asunto muy corto').max(160, 'Asunto muy largo'),
+  descripcion: z.string().max(1000, 'Descripción muy larga').optional(),
+  prioridad: mantenimientoPrioridadEnum.default('MEDIA'),
+  estado: mantenimientoEstadoEnum.default('ABIERTA'),
+  reportado_por: z.string().max(140, 'Nombre de reportante muy largo').optional(),
+});
+
+export const mantenimientoUpdateSchema = z.object({
+  estado: mantenimientoEstadoEnum.optional(),
+  prioridad: mantenimientoPrioridadEnum.optional(),
+  descripcion: z.string().max(1000, 'Descripción muy larga').optional(),
+  reportado_por: z.string().max(140, 'Nombre de reportante muy largo').optional(),
+}).refine(
+  data => Object.keys(data).length > 0,
+  'Debe proporcionar al menos un campo para actualizar'
+);
+
+export const mantenimientoFiltersSchema = z.object({
+  propiedad_id: idSchema.optional(),
+  estado: mantenimientoEstadoEnum.optional(),
+  prioridad: mantenimientoPrioridadEnum.optional(),
+  fecha_desde: dbDateSchema.optional(),
+  fecha_hasta: dbDateSchema.optional(),
+}).refine(
+  data => {
+    if (data.fecha_desde && data.fecha_hasta) {
+      return data.fecha_desde <= data.fecha_hasta;
+    }
+    return true;
+  },
+  'Fecha_hasta debe ser posterior o igual a fecha_desde'
+);
+
 /**
  * Helper para extraer errores de validación de Zod
  */
@@ -253,6 +329,12 @@ export default {
   contratoCreateSchema,
   pagoCreateSchema,
   aplicacionPagoSchema,
+  gastoCreateSchema,
+  gastoUpdateSchema,
+  gastoFiltersSchema,
+  mantenimientoCreateSchema,
+  mantenimientoUpdateSchema,
+  mantenimientoFiltersSchema,
   
   // Schemas de autenticación
   loginSchema,

@@ -19,7 +19,8 @@ export type AuditAction =
 export type ResourceType = 
   | 'USER' | 'PROPERTY' | 'CONTRACT' | 'PAYMENT'
   | 'INVOICE' | 'FACTURA' | 'facturas'
-  | 'DOCUMENT' | 'ROLE' | 'SESSION';
+  | 'DOCUMENT' | 'ROLE' | 'SESSION'
+  | 'EXPENSE' | 'MAINTENANCE';
 
 /**
  * Interfaz para el log de auditoría
@@ -283,6 +284,8 @@ function getResourceTypeFromPath(path: string): ResourceType {
   if (path.includes('/documentos') || path.includes('/documents')) return 'DOCUMENT';
   if (path.includes('/roles')) return 'ROLE';
   if (path.includes('/auth')) return 'SESSION';
+  if (path.includes('/gastos')) return 'EXPENSE';
+  if (path.includes('/mantenimiento')) return 'MAINTENANCE';
   return 'USER'; // default
 }
 

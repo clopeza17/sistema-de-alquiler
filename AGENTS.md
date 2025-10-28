@@ -59,6 +59,16 @@
   - Modo oscuro por defecto (`<html class="dark">`) y clases `dark:` en componentes.
   - Icono/Logo: colocar `edifico.png` en `frontend/public/edifico.png` (favicon y login). Realizar hard reload para refrescar cache del navegador.
 
+- Gastos fijos:
+  - Endpoint `/api/v1/gastos` con filtros por propiedad, tipo y rango de fechas.
+  - Validaciones con Zod, auditoría y RBAC (`ADMIN`, `OPER`).
+  - Catálogo de tipos disponible en `/api/v1/gastos/catalogo/tipos`.
+
+- Mantenimiento:
+  - Endpoint `/api/v1/mantenimiento` para tickets, filtros y cambio de estado.
+  - Estados y prioridades alineados al esquema (`ABIERTA`, `EN_PROCESO`, etc.).
+  - Cancelación vía `DELETE /mantenimiento/:id` (marca estado `CANCELADA`).
+
 - Usuarios:
   - Frontend usa “Nombre completo” en formularios (un único campo). Backend acepta `nombre_completo` o (`nombres` + `apellidos`) y almacena en `usuarios.nombre_completo`.
   - Restablecimiento de contraseña desde modal de edición (ADMIN o el propio usuario).
@@ -87,11 +97,7 @@
 - Roles: selección única (listbox); al seleccionar un rol se deshabilitan los demás hasta deseleccionar.
 
 
-## Próximo Módulo: Contratos
-- Endpoints: `GET/POST /contratos`, `GET/PUT /contratos/:id`, `POST /contratos/:id/finalizar`, `POST /contratos/:id/renovar`.
-- Reglas: propiedad en estado `DISPONIBLE`, `fecha_inicio <= fecha_fin`, un solo `ACTIVO` por propiedad.
-- Tareas:
-  - Implementar/ajustar `controllers/contratosController.ts` y rutas en `routes/contratosRoutes.ts`.
-  - Validaciones con Zod y transacciones en operaciones críticas.
-  - Tests con Supertest para flujos feliz y conflictos (409): solapamiento de fechas, propiedad ocupada.
-  - Actualizar documentación (flow/plan) y ejemplos de curl/Postman.
+## Próximo Enfoque: Pruebas y Documentación
+- Ampliar cobertura de Vitest (usuarios, contratos, reportes y módulos nuevos).
+- Documentar endpoints recientes en Postman/Swagger.
+- Sincronizar README/plan con las últimas rutas disponibles.

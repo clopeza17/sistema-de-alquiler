@@ -32,6 +32,8 @@ import facturacionRoutes from './routes/facturacionRoutes.js';
 import facturasRoutes from './routes/facturasRoutes.js';
 import pagosRoutes from './routes/pagosRoutes.js';
 import reportesRoutes from './routes/reportesRoutes.js';
+import gastosRoutes from './routes/gastosRoutes.js';
+import mantenimientoRoutes from './routes/mantenimientoRoutes.js';
 
 // Crear aplicación Express
 const app = express();
@@ -100,6 +102,8 @@ app.use('/api/v1/facturacion', facturacionRoutes);
 app.use('/api/v1/facturas', facturasRoutes);
 app.use('/api/v1/pagos', pagosRoutes);
 app.use('/api/v1/reportes', reportesRoutes);
+app.use('/api/v1/gastos', gastosRoutes);
+app.use('/api/v1/mantenimiento', mantenimientoRoutes);
 
 // API routes prefix - TODO: agregar rutas de módulos
 app.use('/api/v1', (_req, res, _next) => {
