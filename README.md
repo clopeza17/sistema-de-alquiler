@@ -1,71 +1,52 @@
 # Sistema de Alquiler
 
-Sistema de gestión de alquileres de propiedades con base de datos MySQL.
+Aplicación de gestión de alquileres con React, API Express y MySQL.
 
-## Configuración inicial
+## Ejecutar todo con Docker
 
-1. **Clonar variables de entorno:**
+1. Copia `.env.example` a `.env` y reemplaza `JWT_SECRET` con un valor aleatorio de al menos 32 caracteres. Puedes generar uno con `openssl rand -hex 32`.
+2. Inicia los servicios:
+
    ```bash
-   cp .env.example .env
+   docker compose up -d --build
    ```
 
-2. **Modificar credenciales** en el archivo `.env` si es necesario.
+3. Abre la aplicación en <http://localhost:3000>. La API queda en <http://localhost:3001/health> y phpMyAdmin en <http://localhost:8080>.
 
-## Ejecutar con Docker
+4. Crea el usuario administrador desde una terminal. El correo predeterminado es `admin@example.com` y el script pedirá una contraseña:
 
-### Iniciar los servicios
+   ```bash
+   ./backend/create-admin.sh
+   ```
+
+   Puedes indicar otro correo con `ADMIN_EMAIL`. Si lo ejecutas de nuevo con el mismo correo, actualizará la contraseña y asegurará el rol `ADMIN`.
+
+El frontend envía `/api/` al backend dentro de la red de Docker. MySQL se inicializa desde `mysql/init/` cuando se crea el volumen por primera vez. Los puertos y las credenciales de MySQL se pueden cambiar en `.env` antes del primer inicio.
+
+Para revisar el estado y los registros:
+
 ```bash
-docker-compose up -d
+docker compose ps
+docker compose logs -f backend frontend mysql
 ```
 
-### Verificar que los contenedores estén corriendo
+Para detener la aplicación sin borrar los datos:
+
 ```bash
-docker-compose ps
+docker compose down
 ```
 
-### Acceder a los servicios
+`docker compose down -v` elimina también el volumen de MySQL y todos los datos guardados allí.
 
-- **MySQL:** `localhost:3306`
-  - Usuario: `app_user`
-  - Contraseña: `app_password`
-  - Base de datos: `sistema_alquiler`
+## Servicios y puertos predeterminados
 
-- **phpMyAdmin:** http://localhost:8080
-  - Usuario: `root`
-  - Contraseña: `root_password`
+| Servicio | URL o puerto | Uso |
+| --- | --- | --- |
+| Frontend | <http://localhost:3000> | Aplicación web |
+| Backend | <http://localhost:3001/health> | API y verificación de salud |
+| MySQL | `localhost:3306` | Base de datos `sistema_alquiler` |
+| phpMyAdmin | <http://localhost:8080> | Administración de MySQL |
 
-## Estructura de la base de datos
+Los puertos se configuran con `FRONTEND_PORT`, `BACKEND_PORT`, `MYSQL_PORT` y `PHPMYADMIN_PORT` en `.env`. El usuario de MySQL para la aplicación es `app_user`, con la contraseña definida en `MYSQL_PASSWORD`.
 
-La base de datos incluye las siguientes tablas:
-
-- **usuarios:** Propietarios, inquilinos y administradores
-- **propiedades:** Inmuebles disponibles para alquiler
-- **alquileres:** Contratos de alquiler activos
-- **pagos:** Registro de pagos mensuales
-
-## Comandos útiles
-
-### Detener los servicios
-```bash
-docker-compose down
-```
-
-### Ver logs
-```bash
-docker-compose logs mysql
-docker-compose logs phpmyadmin
-```
-
-### Hacer backup de la base de datos
-```bash
-docker exec sistema_alquiler_mysql mysqldump -u root -proot_password sistema_alquiler > backup.sql
-```
-
-### Restaurar backup
-```bash
-docker exec -i sistema_alquiler_mysql mysql -u root -proot_password sistema_alquiler < backup.sql
-```
-
-## Desarrollo
-
-Para desarrollo, puedes conectarte directamente a MySQL usando las credenciales configuradas en el archivo `.env`.
+La semilla SQL no incluye credenciales de administrador. El script guarda la contraseña como hash bcrypt en MySQL; ninguna contraseña de administrador se guarda en Git.

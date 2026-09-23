@@ -1,4 +1,6 @@
-import { toast, ToastOptions } from 'sonner'
+import { toast } from 'sonner'
+
+type ToastOptions = Parameters<typeof toast.success>[1]
 
 type ToastType = 'success' | 'error' | 'warning' | 'info'
 

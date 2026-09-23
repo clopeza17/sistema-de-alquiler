@@ -72,18 +72,18 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
-export const refresh = asyncHandler(async (req: Request, res: Response) => {
+export const refresh = asyncHandler(async (_req: Request, res: Response) => {
   res.json({ success: true, message: 'Refresh endpoint - en desarrollo' });
 });
 
-export const register = asyncHandler(async (req: Request, res: Response) => {
+export const register = asyncHandler(async (_req: Request, res: Response) => {
   res.json({ success: true, message: 'Register endpoint - en desarrollo' });
 });
 
-export const logout = asyncHandler(async (req: Request, res: Response) => {
+export const logout = asyncHandler(async (_req: Request, res: Response) => {
   res.json({ success: true, message: 'Logout exitoso' });
 });
 
-export const getProfile = asyncHandler(async (req: Request, res: Response) => {
+export const getProfile = asyncHandler(async (_req: Request, res: Response) => {
   res.json({ success: true, message: 'Profile endpoint - en desarrollo' });
 });

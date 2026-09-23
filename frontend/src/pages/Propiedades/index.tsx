@@ -14,7 +14,7 @@ export default function Propiedades() {
   const [openMenuId, setOpenMenuId] = useState<number | null>(null)
   const [editOpen, setEditOpen] = useState(false)
   const [editTarget, setEditTarget] = useState<PropiedadItem | null>(null)
-  const [editForm, setEditForm] = useState<Partial<PropiedadItem> & { area_m2?: number; deposito?: number; notas?: string; estado?: string }>({})
+  const [editForm, setEditForm] = useState<Partial<PropiedadItem>>({})
   const [createOpen, setCreateOpen] = useState(false)
 
   const canSubmit = useMemo(() => form.codigo && form.titulo && form.direccion && Number(form.renta_mensual) > 0, [form])

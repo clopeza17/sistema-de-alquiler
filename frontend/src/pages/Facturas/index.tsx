@@ -7,7 +7,7 @@ export default function Facturas() {
   const [items, setItems] = useState<FacturaItem[]>([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
-  const [limit, setLimit] = useState(10)
+  const limit = 10
   const [estado, setEstado] = useState<FacturaEstado | ''>('')
   const [contratoId, setContratoId] = useState<number | ''>('')
   const [desde, setDesde] = useState('')
@@ -29,7 +29,7 @@ export default function Facturas() {
 
   useEffect(() => {
     load()
-  }, [page, limit, estado, contratoId, desde, hasta])
+  }, [page, estado, contratoId, desde, hasta])
 
   useEffect(() => {
     // opciones básicas de contratos (primeras 100)

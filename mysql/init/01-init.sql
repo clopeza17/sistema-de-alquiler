@@ -462,10 +462,6 @@ INSERT INTO tipos_gasto (nombre, descripcion) VALUES
   ('Internet','Conectividad')
 ON DUPLICATE KEY UPDATE descripcion=VALUES(descripcion);
 
-INSERT INTO usuarios (correo, contrasena_hash, nombre_completo, activo)
-VALUES ('admin@example.com', '$2y$10$hash_fake_usa_bcrypt', 'Administrador', 1)
-ON DUPLICATE KEY UPDATE nombre_completo=VALUES(nombre_completo);
-
 -- =========================================================
 -- 9) Consultas ejemplo
 -- =========================================================

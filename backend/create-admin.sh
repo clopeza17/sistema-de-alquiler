@@ -1,50 +1,24 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
-# Script para crear usuario administrador inicial
+project_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$project_dir"
 
-echo "🔄 Creando usuario administrador inicial..."
+email="${ADMIN_EMAIL:-admin@example.com}"
+if [[ -z "${ADMIN_PASSWORD:-}" ]]; then
+  if [[ ! -t 0 ]]; then
+    echo 'Ejecuta el script en una terminal o define ADMIN_PASSWORD.' >&2
+    exit 1
+  fi
+  read -r -s -p "Contraseña para $email: " password
+  printf '\n'
+else
+  password="$ADMIN_PASSWORD"
+fi
 
-# Usar el endpoint de register para crear el admin
-curl -X POST http://localhost:3001/api/v1/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "admin@sistema.com",
-    "password": "Admin123456",
-    "nombres": "Administrador",
-    "apellidos": "Sistema",
-    "telefono": "12345678"
-  }' \
-  | jq .
+if [[ ${#password} -lt 8 ]]; then
+  echo 'La contraseña debe tener al menos 8 caracteres.' >&2
+  exit 1
+fi
 
-echo ""
-echo "🔧 Actualizando roles del usuario a ADMIN..."
-
-# Conectar a MySQL y cambiar el rol a ADMIN
-docker exec -i sistema_alquiler_mysql mysql -u admin -padmin123 sistema_alquiler << EOF
--- Buscar el ID del usuario admin
-SELECT @user_id := id FROM usuarios WHERE email = 'admin@sistema.com';
-
--- Buscar el ID del rol ADMIN  
-SELECT @admin_role_id := id FROM roles WHERE nombre = 'ADMIN';
-
--- Eliminar rol INQUILINO por defecto
-DELETE FROM user_roles WHERE user_id = @user_id;
-
--- Asignar rol ADMIN
-INSERT INTO user_roles (user_id, role_id, created_at) VALUES (@user_id, @admin_role_id, NOW());
-
--- Verificar
-SELECT 
-  u.email,
-  u.nombres,
-  r.nombre as rol
-FROM usuarios u
-JOIN user_roles ur ON u.id = ur.user_id  
-JOIN roles r ON ur.role_id = r.id
-WHERE u.email = 'admin@sistema.com';
-EOF
-
-echo ""
-echo "✅ Usuario administrador creado exitosamente"
-echo "📧 Email: admin@sistema.com"
-echo "🔑 Password: Admin123456"
+printf '%s\n%s\n' "$email" "$password" | docker compose exec -T backend node scripts/create-admin.mjs

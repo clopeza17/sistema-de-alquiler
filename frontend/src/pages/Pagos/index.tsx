@@ -7,7 +7,7 @@ export default function Pagos() {
   const [items, setItems] = useState<PagoItem[]>([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
-  const [limit, setLimit] = useState(10)
+  const limit = 10
   const [contratoId, setContratoId] = useState<number | ''>('')
   const [desde, setDesde] = useState('')
   const [hasta, setHasta] = useState('')
@@ -33,7 +33,7 @@ export default function Pagos() {
     } catch (e: any) { notifyError(e?.response?.data?.error?.message || e.message || 'Error al cargar pagos') } finally { setLoading(false) }
   }
 
-  useEffect(() => { load() }, [page, limit, contratoId, desde, hasta])
+  useEffect(() => { load() }, [page, contratoId, desde, hasta])
 
   useEffect(() => {
     pagosApi.formas().then(setFormas).catch(() => {})

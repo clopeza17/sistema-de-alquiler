@@ -23,6 +23,7 @@ export const corsOptions: cors.CorsOptions = {
       'http://localhost:5173',    // Vite dev server
       'http://127.0.0.1:3000',
       'http://127.0.0.1:5173',
+      env.CORS_ORIGIN,
     ];
 
     // En producción, agregar el dominio real

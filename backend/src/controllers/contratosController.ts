@@ -6,9 +6,6 @@ import {
   ConflictError,
   BadRequestError,
 } from '../common/errors.js';
-import { 
-  idSchema,
-} from '../common/validators.js';
 import { createDbLogger } from '../config/logger.js';
 import { asyncHandler } from '../middlewares/errorHandler.js';
 import { auditAction } from '../middlewares/audit.js';
@@ -326,7 +323,7 @@ export const updateContrato = asyncHandler(async (req: Request, res: Response) =
   try {
     await connection.beginTransaction();
     
-    const { id } = idSchema.parse(req.params);
+    const { id } = paramsIdSchema.parse(req.params);
     const updateData = contratoUpdateSchema.parse(req.body);
     
     // Verificar que el contrato existe
@@ -422,7 +419,7 @@ export const finalizarContrato = asyncHandler(async (req: Request, res: Response
   try {
     await connection.beginTransaction();
     
-    const { id } = idSchema.parse(req.params);
+    const { id } = paramsIdSchema.parse(req.params);
     const { fecha_finalizacion, motivo } = req.body;
     
     // Verificar que el contrato existe y está activo
@@ -499,7 +496,7 @@ export const renovarContrato = asyncHandler(async (req: Request, res: Response) 
   try {
     await connection.beginTransaction();
     
-    const { id } = idSchema.parse(req.params);
+    const { id } = paramsIdSchema.parse(req.params);
     const { nueva_fecha_fin, nuevo_monto } = req.body;
     
     if (!nueva_fecha_fin) {
@@ -578,7 +575,7 @@ export const renovarContrato = asyncHandler(async (req: Request, res: Response) 
  */
 export const getFacturasContrato = asyncHandler(async (req: Request, res: Response) => {
   try {
-    const { id } = idSchema.parse(req.params);
+    const { id } = paramsIdSchema.parse(req.params);
     
     // Verificar que el contrato existe
     const [contratoRows] = await pool.execute(
@@ -631,7 +628,7 @@ export const deleteContrato = asyncHandler(async (req: Request, res: Response) =
   try {
     await connection.beginTransaction();
     
-    const { id } = idSchema.parse(req.params);
+    const { id } = paramsIdSchema.parse(req.params);
     
     // Verificar que el contrato existe
     const [contratoRows] = await connection.execute(

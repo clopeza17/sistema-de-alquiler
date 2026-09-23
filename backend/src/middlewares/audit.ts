@@ -11,7 +11,8 @@ const logger = createDbLogger();
 export type AuditAction = 
   | 'CREATE' | 'READ' | 'UPDATE' | 'DELETE'
   | 'LOGIN' | 'LOGOUT' | 'PASSWORD_CHANGE'
-  | 'PAYMENT_CREATED' | 'CONTRACT_SIGNED' | 'PROPERTY_PUBLISHED';
+  | 'PAYMENT_CREATED' | 'CONTRACT_SIGNED' | 'PROPERTY_PUBLISHED'
+  | 'FINALIZE' | 'RENEW';
 
 /**
  * Tipos de recursos del sistema
@@ -20,7 +21,7 @@ export type ResourceType =
   | 'USER' | 'PROPERTY' | 'CONTRACT' | 'PAYMENT'
   | 'INVOICE' | 'FACTURA' | 'facturas'
   | 'DOCUMENT' | 'ROLE' | 'SESSION'
-  | 'EXPENSE' | 'MAINTENANCE';
+  | 'EXPENSE' | 'MAINTENANCE' | 'contratos';
 
 /**
  * Interfaz para el log de auditoría
@@ -29,7 +30,7 @@ interface AuditLog {
   userId?: number;
   action: AuditAction;
   resourceType: ResourceType;
-  resourceId?: number;
+  resourceId?: number | null;
   details?: Record<string, any>;
   ipAddress?: string;
   userAgent?: string;
@@ -186,7 +187,7 @@ export async function auditAction(
   req: Request,
   action: AuditAction,
   resourceType: ResourceType,
-  resourceId?: number,
+  resourceId?: number | null,
   details?: Record<string, any>,
   success: boolean = true,
   errorMessage?: string

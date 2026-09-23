@@ -2,11 +2,8 @@ import { Request, Response } from 'express'
 import { pool } from '../config/db.js'
 import { RowDataPacket, ResultSetHeader } from 'mysql2'
 import { asyncHandler } from '../middlewares/errorHandler.js'
-import { createDbLogger } from '../config/logger.js'
 import { BadRequestError, NotFoundError } from '../common/errors.js'
 import { idSchema, paginationSchema, propiedadCreateSchema, propiedadUpdateSchema } from '../common/validators.js'
-
-const logger = createDbLogger()
 
 interface PropRow extends RowDataPacket {
   id: number
