@@ -13,13 +13,19 @@ WITH RECURSIVE n AS (SELECT 1 AS i UNION ALL SELECT i+1 FROM n WHERE i < 100)
 SELECT CONCAT('Inquilino sintético ', i), CONCAT('acs-lt-', LPAD(i, 3, '0'), '@example.invalid')
 FROM n;
 
-INSERT INTO contratos (propiedad_id, inquilino_id, fecha_inicio, fecha_fin, renta_mensual, estado, creado_por)
-SELECT p.id, i.id, '2026-01-01', '2028-12-31', 1000, 'ACTIVO', u.id
+-- Separar la selección porque el trigger de contratos actualiza propiedades.
+CREATE TEMPORARY TABLE acs_lt_contratos AS
+SELECT p.id AS propiedad_id, i.id AS inquilino_id, u.id AS creado_por
 FROM propiedades p
 JOIN inquilinos i ON i.correo = CONCAT('acs-lt-', RIGHT(p.codigo, 3), '@example.invalid')
 JOIN usuarios u ON u.correo = 'qa-acs@example.invalid'
 WHERE p.codigo LIKE 'ACS-LT-%'
   AND NOT EXISTS (SELECT 1 FROM contratos c WHERE c.propiedad_id = p.id);
+
+INSERT INTO contratos (propiedad_id, inquilino_id, fecha_inicio, fecha_fin, renta_mensual, estado, creado_por)
+SELECT propiedad_id, inquilino_id, '2026-01-01', '2028-12-31', 1000, 'ACTIVO', creado_por
+FROM acs_lt_contratos;
+DROP TEMPORARY TABLE acs_lt_contratos;
 
 INSERT IGNORE INTO facturas (
   contrato_id, anio_periodo, mes_periodo, fecha_emision, fecha_vencimiento,
