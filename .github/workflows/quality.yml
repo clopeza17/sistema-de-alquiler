@@ -1,0 +1,100 @@
+name: ACS Fase 2
+
+on:
+  pull_request:
+    branches: [dev, qa, main]
+  push:
+    branches: [dev, qa, main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: Calidad ACS
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      sonar:
+        image: sonarqube@sha256:62930c7f510534bb2bf551ca69ad3ee6f8e12b4116d394597c64cefccbb3313b
+        env:
+          SONAR_ES_BOOTSTRAP_CHECKS_DISABLE: 'true'
+        ports:
+          - 127.0.0.1:9000:9000
+    env:
+      SONAR_HOST_URL: http://127.0.0.1:9000
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
+            quality/runner/package-lock.json
+      - name: Instalar dependencias y compilar
+        run: |
+          npm --prefix backend ci
+          npm --prefix frontend ci
+          npm --prefix quality/runner ci
+          npm --prefix backend run build
+          npm --prefix frontend run build
+      - name: Pruebas unitarias y cobertura crítica
+        run: |
+          npm --prefix backend run test:coverage -- --threads=false
+          npm --prefix frontend test -- --threads=false
+          node quality/scripts/check-unit-coverage.mjs
+      - name: Analizar con SonarQube y exigir la puerta de calidad
+        run: |
+          token="$(quality/scripts/bootstrap-sonar-ci.sh)"
+          echo "::add-mask::$token"
+          SONAR_TOKEN="$token" quality/runner/node_modules/.bin/sonar-scanner-npm -Dsonar.projectVersion="$GITHUB_SHA"
+      - name: Pruebas de API con Newman y MySQL aislado
+        run: quality/scripts/test-api-docker.sh
+      - name: Publicar evidencias
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: calidad-acs
+          if-no-files-found: warn
+          path: |
+            backend/coverage/coverage-summary.json
+            backend/coverage/lcov.info
+            .scannerwork/report-task.txt
+            quality-results/api.json
+          include-hidden-files: true
+
+  deploy:
+    name: Desplegar ambiente
+    needs: quality
+    if: github.event_name == 'push' && (github.ref_name == 'qa' || github.ref_name == 'main' || github.ref_name == 'dev')
+    runs-on: ubuntu-latest
+    environment: ${{ github.ref_name == 'main' && 'prod' || github.ref_name }}
+    concurrency:
+      group: acs-deploy-${{ github.ref_name }}
+      cancel-in-progress: false
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Instalar clave SSH del ambiente
+        env:
+          DEPLOY_KEY: ${{ secrets.ACS_DEPLOY_KEY }}
+          KNOWN_HOSTS: ${{ secrets.ACS_KNOWN_HOSTS }}
+        run: |
+          test -n "$DEPLOY_KEY" && test -n "$KNOWN_HOSTS"
+          install -d -m 700 ~/.ssh
+          umask 077
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/id_ed25519
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+      - name: Activar el commit validado
+        env:
+          ACS_DEPLOY_HOST: ${{ vars.ACS_DEPLOY_HOST }}
+          ACS_ENVIRONMENT: ${{ github.ref_name == 'main' && 'prod' || github.ref_name }}
+        run: quality/deploy/publish.sh "$ACS_ENVIRONMENT"
