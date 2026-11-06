@@ -1,6 +1,138 @@
-{"total": {"lines":{"total":1495,"covered":340,"skipped":0,"pct":22.74},"statements":{"total":1495,"covered":340,"skipped":0,"pct":22.74},"functions":{"total":3,"covered":1,"skipped":0,"pct":33.33},"branches":{"total":31,"covered":12,"skipped":0,"pct":38.7},"branchesTrue":{"total":0,"covered":0,"skipped":0,"pct":"Unknown"}}
-,"/Users/carlos/Documents/ACS/proyecto-fase1/backend/src/controllers/aplicacionesPagoController.ts": {"lines":{"total":180,"covered":73,"skipped":0,"pct":40.55},"functions":{"total":0,"covered":0,"skipped":0,"pct":100},"statements":{"total":180,"covered":73,"skipped":0,"pct":40.55},"branches":{"total":9,"covered":2,"skipped":0,"pct":22.22}}
-,"/Users/carlos/Documents/ACS/proyecto-fase1/backend/src/controllers/contratosController.ts": {"lines":{"total":689,"covered":0,"skipped":0,"pct":0},"functions":{"total":1,"covered":0,"skipped":0,"pct":0},"statements":{"total":689,"covered":0,"skipped":0,"pct":0},"branches":{"total":1,"covered":0,"skipped":0,"pct":0}}
-,"/Users/carlos/Documents/ACS/proyecto-fase1/backend/src/controllers/facturacionController.ts": {"lines":{"total":351,"covered":154,"skipped":0,"pct":43.87},"functions":{"total":2,"covered":1,"skipped":0,"pct":50},"statements":{"total":351,"covered":154,"skipped":0,"pct":43.87},"branches":{"total":15,"covered":8,"skipped":0,"pct":53.33}}
-,"/Users/carlos/Documents/ACS/proyecto-fase1/backend/src/controllers/pagosController.ts": {"lines":{"total":275,"covered":113,"skipped":0,"pct":41.09},"functions":{"total":0,"covered":0,"skipped":0,"pct":100},"statements":{"total":275,"covered":113,"skipped":0,"pct":41.09},"branches":{"total":6,"covered":2,"skipped":0,"pct":33.33}}
+{
+  "total": {
+    "lines": {
+      "total": 1495,
+      "covered": 340,
+      "skipped": 0,
+      "pct": 22.74
+    },
+    "statements": {
+      "total": 1495,
+      "covered": 340,
+      "skipped": 0,
+      "pct": 22.74
+    },
+    "functions": {
+      "total": 3,
+      "covered": 1,
+      "skipped": 0,
+      "pct": 33.33
+    },
+    "branches": {
+      "total": 31,
+      "covered": 12,
+      "skipped": 0,
+      "pct": 38.7
+    },
+    "branchesTrue": {
+      "total": 0,
+      "covered": 0,
+      "skipped": 0,
+      "pct": "Unknown"
+    }
+  },
+  "aplicacionesPagoController.ts": {
+    "lines": {
+      "total": 180,
+      "covered": 73,
+      "skipped": 0,
+      "pct": 40.55
+    },
+    "functions": {
+      "total": 0,
+      "covered": 0,
+      "skipped": 0,
+      "pct": 100
+    },
+    "statements": {
+      "total": 180,
+      "covered": 73,
+      "skipped": 0,
+      "pct": 40.55
+    },
+    "branches": {
+      "total": 9,
+      "covered": 2,
+      "skipped": 0,
+      "pct": 22.22
+    }
+  },
+  "contratosController.ts": {
+    "lines": {
+      "total": 689,
+      "covered": 0,
+      "skipped": 0,
+      "pct": 0
+    },
+    "functions": {
+      "total": 1,
+      "covered": 0,
+      "skipped": 0,
+      "pct": 0
+    },
+    "statements": {
+      "total": 689,
+      "covered": 0,
+      "skipped": 0,
+      "pct": 0
+    },
+    "branches": {
+      "total": 1,
+      "covered": 0,
+      "skipped": 0,
+      "pct": 0
+    }
+  },
+  "facturacionController.ts": {
+    "lines": {
+      "total": 351,
+      "covered": 154,
+      "skipped": 0,
+      "pct": 43.87
+    },
+    "functions": {
+      "total": 2,
+      "covered": 1,
+      "skipped": 0,
+      "pct": 50
+    },
+    "statements": {
+      "total": 351,
+      "covered": 154,
+      "skipped": 0,
+      "pct": 43.87
+    },
+    "branches": {
+      "total": 15,
+      "covered": 8,
+      "skipped": 0,
+      "pct": 53.33
+    }
+  },
+  "pagosController.ts": {
+    "lines": {
+      "total": 275,
+      "covered": 113,
+      "skipped": 0,
+      "pct": 41.09
+    },
+    "functions": {
+      "total": 0,
+      "covered": 0,
+      "skipped": 0,
+      "pct": 100
+    },
+    "statements": {
+      "total": 275,
+      "covered": 113,
+      "skipped": 0,
+      "pct": 41.09
+    },
+    "branches": {
+      "total": 6,
+      "covered": 2,
+      "skipped": 0,
+      "pct": 33.33
+    }
+  }
 }
