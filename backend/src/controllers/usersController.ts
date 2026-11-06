@@ -333,10 +333,10 @@ export const getUser = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
-function updatedFullName(userData: z.infer<typeof updateUserSchema>): string | undefined {
+function updatedFullName(userData: z.infer<typeof updateUserSchema>, currentName: string): string | undefined {
   if (userData.nombre_completo !== undefined) return userData.nombre_completo;
   if (userData.nombres || userData.apellidos) {
-    return [userData.nombres, userData.apellidos].filter(Boolean).join(' ');
+    return [userData.nombres, userData.apellidos].filter(Boolean).join(' ').trim() || currentName;
   }
   return undefined;
 }
@@ -402,11 +402,10 @@ export const updateUser = asyncHandler(async (req: Request, res: Response) => {
       updateFields.push('correo = ?');
       updateValues.push(userData.email);
     }
-    const nombreCompletoUpdate = updatedFullName(userData);
+    const nombreCompletoUpdate = updatedFullName(userData, currentUser.nombre_completo);
     if (nombreCompletoUpdate !== undefined) {
-      const nombreCompleto = nombreCompletoUpdate || currentUser.nombre_completo;
       updateFields.push('nombre_completo = ?');
-      updateValues.push(nombreCompleto);
+      updateValues.push(nombreCompletoUpdate);
     }
     
     // Cambio de contraseña (opcional)
