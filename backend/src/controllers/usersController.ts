@@ -341,6 +341,19 @@ function updatedFullName(userData: z.infer<typeof updateUserSchema>, currentName
   return undefined;
 }
 
+async function getUpdatedRoleNames(roleIds?: number[]): Promise<string[]> {
+  if (!roleIds) return [];
+  const placeholders = roleIds.map(() => '?').join(',');
+  const [roles] = await pool.execute<RoleRow[]>(
+    `SELECT id, nombre FROM roles WHERE id IN (${placeholders})`,
+    roleIds,
+  );
+  if (roles.length !== roleIds.length) {
+    throw new BadRequestError('Uno o más roles especificados no existen');
+  }
+  return roles.map((role) => role.nombre);
+}
+
 /**
  * PUT /usuarios/:id
  * Actualizar usuario
@@ -374,21 +387,8 @@ export const updateUser = asyncHandler(async (req: Request, res: Response) => {
     }
   }
   
-  // Si se actualizan roles, verificar que existen
-  let roleNames: string[] = [];
-  if (userData.roles) {
-    const [roles] = await pool.execute<RoleRow[]>(
-      `SELECT id, nombre FROM roles WHERE id IN (${userData.roles.map(() => '?').join(',')})`,
-      userData.roles
-    );
-    
-    if (roles.length !== userData.roles.length) {
-      throw new BadRequestError('Uno o más roles especificados no existen');
-    }
-    
-    roleNames = roles.map(r => r.nombre);
-  }
-  
+  const roleNames = await getUpdatedRoleNames(userData.roles);
+
   // Iniciar transacción
   const connection = await pool.getConnection();
   await connection.beginTransaction();
