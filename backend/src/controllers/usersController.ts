@@ -333,6 +333,14 @@ export const getUser = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
+function updatedFullName(userData: z.infer<typeof updateUserSchema>): string | undefined {
+  if (userData.nombre_completo !== undefined) return userData.nombre_completo;
+  if (userData.nombres || userData.apellidos) {
+    return [userData.nombres, userData.apellidos].filter(Boolean).join(' ');
+  }
+  return undefined;
+}
+
 /**
  * PUT /usuarios/:id
  * Actualizar usuario
@@ -340,6 +348,7 @@ export const getUser = asyncHandler(async (req: Request, res: Response) => {
 export const updateUser = asyncHandler(async (req: Request, res: Response) => {
   const userId = idSchema.parse(req.params.id);
   const userData = updateUserSchema.parse(req.body);
+  const { password, ...publicChanges } = userData;
   
   // Verificar que el usuario existe
   const [users] = await pool.execute<UserRow[]>(
@@ -393,7 +402,7 @@ export const updateUser = asyncHandler(async (req: Request, res: Response) => {
       updateFields.push('correo = ?');
       updateValues.push(userData.email);
     }
-    const nombreCompletoUpdate = userData.nombre_completo ?? ((userData.nombres || userData.apellidos) ? `${userData.nombres ?? ''} ${userData.apellidos ?? ''}`.trim() : undefined);
+    const nombreCompletoUpdate = updatedFullName(userData);
     if (nombreCompletoUpdate !== undefined) {
       const nombreCompleto = nombreCompletoUpdate || currentUser.nombre_completo;
       updateFields.push('nombre_completo = ?');
@@ -401,8 +410,8 @@ export const updateUser = asyncHandler(async (req: Request, res: Response) => {
     }
     
     // Cambio de contraseña (opcional)
-    if (userData.password) {
-      const hashed = await hashPassword(userData.password)
+    if (password) {
+      const hashed = await hashPassword(password)
       updateFields.push('contrasena_hash = ?')
       updateValues.push(hashed)
     }
@@ -435,14 +444,14 @@ export const updateUser = asyncHandler(async (req: Request, res: Response) => {
     
     // Auditar actualización
     await auditAction(req, 'UPDATE', 'USER', userId, {
-      changes: userData,
+      changes: publicChanges,
       newRoles: roleNames,
     }, true);
     
     logger.info({
       userId: req.user?.userId,
       updatedUserId: userId,
-      changes: userData,
+      changes: publicChanges,
     }, 'Usuario actualizado exitosamente');
     
     res.json({

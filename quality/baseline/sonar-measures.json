@@ -1,0 +1,48 @@
+{
+  "component": {
+    "key": "acs-sistema-alquiler",
+    "name": "ACS Sistema de Alquiler",
+    "qualifier": "TRK",
+    "measures": [
+      {
+        "metric": "coverage",
+        "value": "9.4",
+        "bestValue": false
+      },
+      {
+        "metric": "alert_status",
+        "value": "OK"
+      },
+      {
+        "metric": "bugs",
+        "value": "19",
+        "bestValue": false
+      },
+      {
+        "metric": "code_smells",
+        "value": "184",
+        "bestValue": false
+      },
+      {
+        "metric": "duplicated_lines_density",
+        "value": "3.3",
+        "bestValue": false
+      },
+      {
+        "metric": "vulnerabilities",
+        "value": "8",
+        "bestValue": false
+      },
+      {
+        "metric": "security_hotspots",
+        "value": "0",
+        "bestValue": true
+      },
+      {
+        "metric": "sqale_index",
+        "value": "1052",
+        "bestValue": false
+      }
+    ]
+  }
+}

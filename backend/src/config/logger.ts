@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import pino from 'pino';
 import { env } from './env.js';
 
@@ -26,7 +27,7 @@ const logger = pino(loggerConfig);
 export const createRequestLogger = () => {
   return logger.child({ 
     name: 'http-request',
-    requestId: Math.random().toString(36).substr(2, 9)
+    requestId: randomUUID()
   });
 };
 

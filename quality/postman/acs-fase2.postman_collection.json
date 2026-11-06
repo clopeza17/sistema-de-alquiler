@@ -1,0 +1,761 @@
+{
+  "info": {
+    "name": "ACS Fase 2 | Contratos, facturación y pagos",
+    "description": "Ejecutar sobre una base QA recién inicializada. El flujo crea datos sintéticos, genera una factura y aplica su pago. Definir baseUrl, adminEmail y adminPassword en un entorno externo.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:13001"
+    },
+    {
+      "key": "adminEmail",
+      "value": ""
+    },
+    {
+      "key": "adminPassword",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "01 Salud del servicio",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Esquema JSON', () => pm.response.to.have.jsonSchema({\"type\":\"object\",\"required\":[\"status\",\"version\"],\"properties\":{\"status\":{\"type\":\"string\"},\"version\":{\"type\":\"string\"}}}));",
+              "pm.test('Contenido de negocio', () => {",
+              "  const response = pm.response.json();",
+              "  pm.expect(response.status).to.eql(\"OK\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/health",
+        "auth": {
+          "type": "noauth"
+        }
+      }
+    },
+    {
+      "name": "02 Contratos sin token",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 401', () => pm.response.to.have.status(401));",
+              "pm.test('Esquema JSON', () => pm.response.to.have.jsonSchema({\"type\":\"object\",\"required\":[\"error\"],\"properties\":{\"error\":{\"type\":\"object\",\"required\":[\"code\",\"message\"],\"properties\":{\"code\":{\"type\":\"string\"},\"message\":{\"type\":\"string\"}}}}}));",
+              "pm.test('Contenido de negocio', () => {",
+              "  const response = pm.response.json();",
+              "  pm.expect(response.error.code).to.eql(\"UNAUTHORIZED\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/contratos",
+        "auth": {
+          "type": "noauth"
+        }
+      }
+    },
+    {
+      "name": "03 Login con usuario inexistente",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 401', () => pm.response.to.have.status(401));",
+              "pm.test('Esquema JSON', () => pm.response.to.have.jsonSchema({\"type\":\"object\",\"required\":[\"error\"],\"properties\":{\"error\":{\"type\":\"object\",\"required\":[\"code\",\"message\"],\"properties\":{\"code\":{\"type\":\"string\"},\"message\":{\"type\":\"string\"}}}}}));",
+              "pm.test('Contenido de negocio', () => {",
+              "  const response = pm.response.json();",
+              "  pm.expect(response.error.message).to.eql(\"Credenciales inválidas\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/auth/login",
+        "auth": {
+          "type": "noauth"
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"email\": \"no-existe@example.invalid\", \"password\": \"ClavePruebaInvalida1\"}"
+        }
+      }
+    },
+    {
+      "name": "04 Login de la cuenta QA",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Esquema JSON', () => pm.response.to.have.jsonSchema({\"type\":\"object\",\"required\":[\"success\",\"data\"],\"properties\":{\"success\":{\"type\":\"boolean\"},\"data\":{\"type\":\"object\",\"required\":[\"user\",\"token\"],\"properties\":{\"user\":{\"type\":\"object\",\"required\":[\"id\",\"email\",\"roles\"],\"properties\":{\"id\":{\"type\":\"integer\"},\"email\":{\"type\":\"string\"},\"roles\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}}}},\"token\":{\"type\":\"string\"}}}}}));",
+              "pm.test('Contenido de negocio', () => {",
+              "  const response = pm.response.json();",
+              "  pm.expect(response.success).to.eql(true);",
+              "  pm.expect(response.data.user.roles).to.include(\"Administrador\");",
+              "  pm.expect(response.data.user.email).to.eql(pm.variables.get(\"adminEmail\"));",
+              "  pm.expect(response.data.token.split(\".\")).to.have.lengthOf(3);",
+              "  pm.collectionVariables.set(\"token\", response.data.token);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/auth/login",
+        "auth": {
+          "type": "noauth"
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"email\": \"{{adminEmail}}\", \"password\": \"{{adminPassword}}\"}"
+        }
+      }
+    },
+    {
+      "name": "05 Crear propiedad QA",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.collectionVariables.set(\"runId\", Date.now().toString());"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+              "pm.test('Esquema JSON', () => pm.response.to.have.jsonSchema({\"type\":\"object\",\"required\":[\"message\",\"data\"],\"properties\":{\"message\":{\"type\":\"string\"},\"data\":{\"type\":\"object\",\"required\":[\"id\"],\"properties\":{\"id\":{\"type\":\"integer\"}}}}}));",
+              "pm.test('Contenido de negocio', () => {",
+              "  const response = pm.response.json();",
+              "  pm.expect(response.data.id).to.be.above(0);",
+              "  pm.collectionVariables.set(\"propertyId\", response.data.id);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/propiedades",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"codigo\": \"QA-{{runId}}\", \"tipo\": \"APARTAMENTO\", \"titulo\": \"Apartamento de prueba\", \"direccion\": \"Zona de prueba de ACS\", \"renta_mensual\": 1000}"
+        }
+      }
+    },
+    {
+      "name": "06 Crear inquilino QA",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+              "pm.test('Esquema JSON', () => pm.response.to.have.jsonSchema({\"type\":\"object\",\"required\":[\"message\",\"data\"],\"properties\":{\"message\":{\"type\":\"string\"},\"data\":{\"type\":\"object\",\"required\":[\"id\"],\"properties\":{\"id\":{\"type\":\"integer\"}}}}}));",
+              "pm.test('Contenido de negocio', () => {",
+              "  const response = pm.response.json();",
+              "  pm.expect(response.data.id).to.be.above(0);",
+              "  pm.collectionVariables.set(\"tenantId\", response.data.id);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/inquilinos",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"nombre_completo\": \"Inquilino de Prueba\"}"
+        }
+      }
+    },
+    {
+      "name": "07 Rechazar vigencia con fechas iguales",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
+              "pm.test('Esquema JSON', () => pm.response.to.have.jsonSchema({\"type\":\"object\",\"required\":[\"error\"],\"properties\":{\"error\":{\"type\":\"object\",\"required\":[\"code\",\"message\"],\"properties\":{\"code\":{\"type\":\"string\"},\"message\":{\"type\":\"string\"}}}}}));",
+              "pm.test('Contenido de negocio', () => {",
+              "  const response = pm.response.json();",
+              "  pm.expect(response.error.code).to.eql(\"BAD_REQUEST\");",
+              "  pm.expect(response.error.message).to.include(\"fecha\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/contratos",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"propiedad_id\":{{propertyId}},\"inquilino_id\":{{tenantId}},\"monto_mensual\":1000,\"fecha_inicio\":\"2026-11-01\",\"fecha_fin\":\"2026-11-01\"}"
+        }
+      }
+    },
+    {
+      "name": "08 Crear contrato activo",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+              "pm.test('Esquema JSON', () => pm.response.to.have.jsonSchema({\"type\":\"object\",\"required\":[\"message\",\"data\"],\"properties\":{\"message\":{\"type\":\"string\"},\"data\":{\"type\":\"object\",\"required\":[\"id\"],\"properties\":{\"id\":{\"type\":\"integer\"}}}}}));",
+              "pm.test('Contenido de negocio', () => {",
+              "  const response = pm.response.json();",
+              "  pm.expect(response.data.id).to.be.above(0);",
+              "  pm.collectionVariables.set(\"contractId\", response.data.id);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/contratos",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"propiedad_id\":{{propertyId}},\"inquilino_id\":{{tenantId}},\"monto_mensual\":1000,\"fecha_inicio\":\"2026-11-01\",\"fecha_fin\":\"2027-10-31\"}"
+        }
+      }
+    },
+    {
+      "name": "09 Confirmar contrato y renta",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Esquema JSON', () => pm.response.to.have.jsonSchema({\"type\":\"object\",\"required\":[\"data\"],\"properties\":{\"data\":{\"type\":\"object\",\"required\":[\"id\",\"propiedad_id\",\"inquilino_id\",\"monto_mensual\",\"estado\"],\"properties\":{\"id\":{\"type\":\"integer\"},\"propiedad_id\":{\"type\":\"integer\"},\"inquilino_id\":{\"type\":\"integer\"},\"monto_mensual\":{\"type\":[\"number\",\"string\"]},\"estado\":{\"type\":\"string\"}}}}}));",
+              "pm.test('Contenido de negocio', () => {",
+              "  const response = pm.response.json();",
+              "  pm.expect(response.data.id).to.eql(Number(pm.collectionVariables.get(\"contractId\")));",
+              "  pm.expect(response.data.propiedad_id).to.eql(Number(pm.collectionVariables.get(\"propertyId\")));",
+              "  pm.expect(response.data.inquilino_id).to.eql(Number(pm.collectionVariables.get(\"tenantId\")));",
+              "  pm.expect(response.data.estado).to.eql(\"ACTIVO\");",
+              "  pm.expect(Number(response.data.monto_mensual)).to.eql(1000);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/contratos/{{contractId}}"
+      }
+    },
+    {
+      "name": "10 Comprobar propiedad ocupada",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Esquema JSON', () => pm.response.to.have.jsonSchema({\"type\":\"object\",\"required\":[\"data\"],\"properties\":{\"data\":{\"type\":\"object\",\"required\":[\"id\",\"estado\",\"codigo\"],\"properties\":{\"id\":{\"type\":\"integer\"},\"estado\":{\"type\":\"string\"},\"codigo\":{\"type\":\"string\"}}}}}));",
+              "pm.test('Contenido de negocio', () => {",
+              "  const response = pm.response.json();",
+              "  pm.expect(response.data.id).to.eql(Number(pm.collectionVariables.get(\"propertyId\")));",
+              "  pm.expect(response.data.estado).to.eql(\"OCUPADA\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/propiedades/{{propertyId}}"
+      }
+    },
+    {
+      "name": "11 Generar factura del período",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+              "pm.test('Esquema JSON', () => pm.response.to.have.jsonSchema({\"type\":\"object\",\"required\":[\"message\",\"data\"],\"properties\":{\"message\":{\"type\":\"string\"},\"data\":{\"type\":\"object\",\"required\":[\"anio\",\"mes\",\"generadas\"],\"properties\":{\"anio\":{\"type\":\"integer\"},\"mes\":{\"type\":\"integer\"},\"generadas\":{\"type\":\"integer\"}}}}}));",
+              "pm.test('Contenido de negocio', () => {",
+              "  const response = pm.response.json();",
+              "  pm.expect(response.data.anio).to.eql(2026);",
+              "  pm.expect(response.data.mes).to.eql(11);",
+              "  pm.expect(response.data.generadas).to.eql(1);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/facturacion/generar",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"anio\": 2026, \"mes\": 11, \"fecha_emision\": \"2026-11-01\", \"fecha_vencimiento\": \"2026-11-08\"}"
+        }
+      }
+    },
+    {
+      "name": "12 Repetir generación sin duplicar",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+              "pm.test('Esquema JSON', () => pm.response.to.have.jsonSchema({\"type\":\"object\",\"required\":[\"message\",\"data\"],\"properties\":{\"message\":{\"type\":\"string\"},\"data\":{\"type\":\"object\",\"required\":[\"anio\",\"mes\",\"generadas\"],\"properties\":{\"anio\":{\"type\":\"integer\"},\"mes\":{\"type\":\"integer\"},\"generadas\":{\"type\":\"integer\"}}}}}));",
+              "pm.test('Contenido de negocio', () => {",
+              "  const response = pm.response.json();",
+              "  pm.expect(response.data.generadas).to.eql(0);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/facturacion/generar",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"anio\": 2026, \"mes\": 11, \"fecha_emision\": \"2026-11-01\", \"fecha_vencimiento\": \"2026-11-08\"}"
+        }
+      }
+    },
+    {
+      "name": "13 Localizar factura pendiente",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Esquema JSON', () => pm.response.to.have.jsonSchema({\"type\":\"object\",\"required\":[\"data\"],\"properties\":{\"data\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"required\":[\"id\",\"contrato_id\",\"saldo_pendiente\",\"estado\",\"monto_total\"],\"properties\":{\"id\":{\"type\":\"integer\"},\"contrato_id\":{\"type\":\"integer\"},\"saldo_pendiente\":{\"type\":[\"number\",\"string\"]},\"estado\":{\"type\":\"string\"},\"monto_total\":{\"type\":[\"number\",\"string\"]}}}}}}));",
+              "pm.test('Contenido de negocio', () => {",
+              "  const response = pm.response.json();",
+              "  pm.expect(response.data).to.have.lengthOf(1);",
+              "  const [invoice] = response.data;",
+              "  pm.expect(Number(invoice.saldo_pendiente)).to.eql(1000);",
+              "  pm.expect(invoice.estado).to.eql(\"ABIERTA\");",
+              "  pm.expect(invoice.contrato_id).to.eql(Number(pm.collectionVariables.get(\"contractId\")));",
+              "  pm.collectionVariables.set(\"invoiceId\", invoice.id);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/facturas?contrato_id={{contractId}}"
+      }
+    },
+    {
+      "name": "14 Consultar forma de pago",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Esquema JSON', () => pm.response.to.have.jsonSchema({\"type\":\"object\",\"required\":[\"data\"],\"properties\":{\"data\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"required\":[\"id\",\"codigo\",\"nombre\"],\"properties\":{\"id\":{\"type\":\"integer\"},\"codigo\":{\"type\":\"string\"},\"nombre\":{\"type\":\"string\"}}}}}}));",
+              "pm.test('Contenido de negocio', () => {",
+              "  const response = pm.response.json();",
+              "  const form = response.data.find((row) => row.codigo === \"EFECTIVO\");",
+              "  pm.expect(form).to.be.an(\"object\");",
+              "  pm.collectionVariables.set(\"paymentFormId\", form.id);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/pagos/catalogo/formas-pago"
+      }
+    },
+    {
+      "name": "15 Rechazar pago de monto cero",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
+              "pm.test('Esquema JSON', () => pm.response.to.have.jsonSchema({\"type\":\"object\",\"required\":[\"error\"],\"properties\":{\"error\":{\"type\":\"object\",\"required\":[\"code\",\"message\"],\"properties\":{\"code\":{\"type\":\"string\"},\"message\":{\"type\":\"string\"}}}}}));",
+              "pm.test('Contenido de negocio', () => {",
+              "  const response = pm.response.json();",
+              "  pm.expect(response.error.code).to.eql(\"VALIDATION_ERROR\");",
+              "  pm.expect(response.error.details.map((issue) => issue.field)).to.include(\"monto\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/pagos",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"contrato_id\":{{contractId}},\"forma_pago_id\":{{paymentFormId}},\"fecha_pago\":\"2026-11-05\",\"monto\":0}"
+        }
+      }
+    },
+    {
+      "name": "16 Registrar el pago",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+              "pm.test('Esquema JSON', () => pm.response.to.have.jsonSchema({\"type\":\"object\",\"required\":[\"data\"],\"properties\":{\"data\":{\"type\":\"object\",\"required\":[\"id\",\"contrato_id\",\"saldo_no_aplicado\",\"monto\"],\"properties\":{\"id\":{\"type\":\"integer\"},\"contrato_id\":{\"type\":\"integer\"},\"saldo_no_aplicado\":{\"type\":[\"number\",\"string\"]},\"monto\":{\"type\":[\"number\",\"string\"]}}}}}));",
+              "pm.test('Contenido de negocio', () => {",
+              "  const response = pm.response.json();",
+              "  pm.expect(response.data.contrato_id).to.eql(Number(pm.collectionVariables.get(\"contractId\")));",
+              "  pm.expect(Number(response.data.saldo_no_aplicado)).to.eql(1000);",
+              "  pm.collectionVariables.set(\"paymentId\", response.data.id);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/pagos",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"contrato_id\":{{contractId}},\"forma_pago_id\":{{paymentFormId}},\"fecha_pago\":\"2026-11-05\",\"monto\":1000}"
+        }
+      }
+    },
+    {
+      "name": "17 Rechazar aplicación superior al saldo",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 409', () => pm.response.to.have.status(409));",
+              "pm.test('Esquema JSON', () => pm.response.to.have.jsonSchema({\"type\":\"object\",\"required\":[\"error\"],\"properties\":{\"error\":{\"type\":\"object\",\"required\":[\"code\",\"message\"],\"properties\":{\"code\":{\"type\":\"string\"},\"message\":{\"type\":\"string\"}}}}}));",
+              "pm.test('Contenido de negocio', () => {",
+              "  const response = pm.response.json();",
+              "  pm.expect(response.error.code).to.eql(\"CONFLICT\");",
+              "  pm.expect(response.error.message).to.include(\"saldo\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/pagos/{{paymentId}}/aplicar",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"factura_id\":{{invoiceId}},\"monto_aplicado\":1001}"
+        }
+      }
+    },
+    {
+      "name": "18 Aplicar pago completo",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+              "pm.test('Esquema JSON', () => pm.response.to.have.jsonSchema({\"type\":\"object\",\"required\":[\"message\",\"data\"],\"properties\":{\"message\":{\"type\":\"string\"},\"data\":{\"type\":\"object\",\"required\":[\"pago_id\",\"factura_id\",\"monto_aplicado\"],\"properties\":{\"pago_id\":{\"type\":\"integer\"},\"factura_id\":{\"type\":\"integer\"},\"monto_aplicado\":{\"type\":[\"number\",\"string\"]}}}}}));",
+              "pm.test('Contenido de negocio', () => {",
+              "  const response = pm.response.json();",
+              "  pm.expect(response.data.factura_id).to.eql(Number(pm.collectionVariables.get(\"invoiceId\")));",
+              "  pm.expect(response.data.pago_id).to.eql(Number(pm.collectionVariables.get(\"paymentId\")));",
+              "  pm.expect(response.data.monto_aplicado).to.eql(1000);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/pagos/{{paymentId}}/aplicar",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"factura_id\":{{invoiceId}},\"monto_aplicado\":1000}"
+        }
+      }
+    },
+    {
+      "name": "19 Confirmar la factura pagada",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Esquema JSON', () => pm.response.to.have.jsonSchema({\"type\":\"object\",\"required\":[\"data\"],\"properties\":{\"data\":{\"type\":\"object\",\"required\":[\"id\",\"contrato_id\",\"saldo_pendiente\",\"estado\",\"monto_total\"],\"properties\":{\"id\":{\"type\":\"integer\"},\"contrato_id\":{\"type\":\"integer\"},\"saldo_pendiente\":{\"type\":[\"number\",\"string\"]},\"estado\":{\"type\":\"string\"},\"monto_total\":{\"type\":[\"number\",\"string\"]}}}}}));",
+              "pm.test('Contenido de negocio', () => {",
+              "  const response = pm.response.json();",
+              "  pm.expect(response.data.id).to.eql(Number(pm.collectionVariables.get(\"invoiceId\")));",
+              "  pm.expect(response.data.estado).to.eql(\"PAGADA\");",
+              "  pm.expect(Number(response.data.saldo_pendiente)).to.eql(0);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/facturas/{{invoiceId}}"
+      }
+    },
+    {
+      "name": "20 Confirmar que el pago se aplicó por completo",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Esquema JSON', () => pm.response.to.have.jsonSchema({\"type\":\"object\",\"required\":[\"data\"],\"properties\":{\"data\":{\"type\":\"object\",\"required\":[\"id\",\"contrato_id\",\"saldo_no_aplicado\",\"monto\"],\"properties\":{\"id\":{\"type\":\"integer\"},\"contrato_id\":{\"type\":\"integer\"},\"saldo_no_aplicado\":{\"type\":[\"number\",\"string\"]},\"monto\":{\"type\":[\"number\",\"string\"]}}}}}));",
+              "pm.test('Contenido de negocio', () => {",
+              "  const response = pm.response.json();",
+              "  pm.expect(response.data.id).to.eql(Number(pm.collectionVariables.get(\"paymentId\")));",
+              "  pm.expect(Number(response.data.saldo_no_aplicado)).to.eql(0);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/pagos/{{paymentId}}"
+      }
+    }
+  ]
+}

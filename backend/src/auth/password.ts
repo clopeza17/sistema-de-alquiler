@@ -1,3 +1,4 @@
+import { randomInt } from 'node:crypto';
 import bcrypt from 'bcrypt';
 
 /**
@@ -31,28 +32,24 @@ export async function verifyPassword(password: string, hashedPassword: string): 
  * Generar contraseña temporal aleatoria
  */
 export function generateTemporaryPassword(length: number = 12): string {
-  const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  const lowercase = 'abcdefghijklmnopqrstuvwxyz';
-  const numbers = '0123456789';
-  const symbols = '!@#$%^&*';
-  
-  const allChars = uppercase + lowercase + numbers + symbols;
-  
-  let password = '';
-  
-  // Asegurar al menos un carácter de cada tipo
-  password += uppercase[Math.floor(Math.random() * uppercase.length)];
-  password += lowercase[Math.floor(Math.random() * lowercase.length)];
-  password += numbers[Math.floor(Math.random() * numbers.length)];
-  password += symbols[Math.floor(Math.random() * symbols.length)];
-  
-  // Completar la longitud con caracteres aleatorios
-  for (let i = password.length; i < length; i++) {
-    password += allChars[Math.floor(Math.random() * allChars.length)];
+  const groups = [
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+    'abcdefghijklmnopqrstuvwxyz',
+    '0123456789',
+    '!@#$%^&*',
+  ];
+  const allChars = groups.join('');
+  const characters = groups.map((group) => group[randomInt(group.length)]);
+
+  while (characters.length < length) {
+    characters.push(allChars[randomInt(allChars.length)]);
   }
-  
-  // Mezclar la contraseña
-  return password.split('').sort(() => Math.random() - 0.5).join('');
+
+  for (let i = characters.length - 1; i > 0; i--) {
+    const j = randomInt(i + 1);
+    [characters[i], characters[j]] = [characters[j], characters[i]];
+  }
+  return characters.join('');
 }
 
 /**
