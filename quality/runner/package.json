@@ -1,0 +1,6 @@
+{
+  "devDependencies": {
+    "@sonar/scan": "5.0.2",
+    "newman": "6.2.3"
+  }
+}
