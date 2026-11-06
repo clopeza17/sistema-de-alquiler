@@ -19,3 +19,8 @@ venv/
 # IDE
 .vscode/
 .idea/
+
+# Informes generados por herramientas de calidad
+coverage/
+.scannerwork/
+quality-results/

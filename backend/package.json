@@ -441,6 +441,7 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "@types/jsonwebtoken": "^9.0.10",
+    "@vitest/coverage-v8": "0.34.6",
     "ts-node": "^10.9.2"
   }
 }
