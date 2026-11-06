@@ -37,6 +37,7 @@ import mantenimientoRoutes from './routes/mantenimientoRoutes.js';
 
 // Crear aplicación Express
 const app = express();
+app.disable('x-powered-by');
 
 // ========== MIDDLEWARES DE SEGURIDAD (orden importante) ==========
 

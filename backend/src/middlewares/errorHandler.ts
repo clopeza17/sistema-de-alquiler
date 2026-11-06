@@ -43,7 +43,6 @@ export function errorHandler(
         'user-agent': req.get('User-Agent'),
         'content-type': req.get('Content-Type'),
       },
-      body: req.method !== 'GET' ? req.body : undefined,
       params: req.params,
       query: req.query,
       ip: req.ip,
