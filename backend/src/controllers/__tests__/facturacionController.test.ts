@@ -6,15 +6,15 @@ import {
 } from '../facturacionController.js';
 import { ConflictError } from '../../common/errors.js';
 
-const auditActionMock = vi.fn().mockResolvedValue(undefined);
+const auditActionMock = vi.hoisted(() => vi.fn().mockResolvedValue(undefined));
 vi.mock('../../middlewares/audit.js', () => ({
   auditAction: auditActionMock,
 }));
 
-const loggerMock = {
+const loggerMock = vi.hoisted(() => ({
   info: vi.fn(),
   error: vi.fn(),
-};
+}));
 
 vi.mock('../../config/logger.js', async () => {
   const actual = await vi.importActual<any>('../../config/logger.js');
@@ -24,10 +24,10 @@ vi.mock('../../config/logger.js', async () => {
   };
 });
 
-const poolExecuteMock = vi.fn();
-const connectionExecuteMock = vi.fn();
-const releaseMock = vi.fn();
-const getConnectionMock = vi.fn();
+const poolExecuteMock = vi.hoisted(() => vi.fn());
+const connectionExecuteMock = vi.hoisted(() => vi.fn());
+const releaseMock = vi.hoisted(() => vi.fn());
+const getConnectionMock = vi.hoisted(() => vi.fn());
 
 vi.mock('../../config/db.js', () => ({
   pool: {
